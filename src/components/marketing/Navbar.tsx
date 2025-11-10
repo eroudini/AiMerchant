@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { track } from "@/lib/analytics";
@@ -14,11 +14,31 @@ const navItems = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [openPlatform, setOpenPlatform] = useState(false);
+  const platformRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Fermer le menu plateforme sur clic extérieur ou ESC
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (!platformRef.current) return;
+      if (!platformRef.current.contains(e.target as Node)) {
+        setOpenPlatform(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenPlatform(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   return (
@@ -50,30 +70,57 @@ export default function Navbar() {
             {navItems.map((item) => {
               if (item.dropdown) {
                 return (
-                  <div key={item.label} className="relative">
+                  <div key={item.label} className="relative" ref={platformRef}>
                     <button
                       type="button"
+                      id="platform-trigger"
+                      aria-haspopup="true"
+                      aria-expanded={openPlatform}
+                      aria-controls="platform-menu"
                       onClick={() => setOpenPlatform((o) => !o)}
                       onBlur={() => setTimeout(() => setOpenPlatform(false), 150)}
                       className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-[#FF6A00] transition-colors duration-200 flex items-center gap-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setOpenPlatform(true);
+                          // focus first item après ouverture
+                          setTimeout(() => {
+                            const firstItem = document.querySelector<HTMLButtonElement>("#platform-menu [data-menu-item]");
+                            firstItem?.focus();
+                          }, 0);
+                        }
+                      }}
                     >
                       {item.label}
                       <span className={`transition-transform ${openPlatform ? "rotate-180" : "rotate-0"}`}>▾</span>
                     </button>
                     {openPlatform && (
-                      <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl border bg-white shadow-lg py-2 z-50">
+                      <div
+                        id="platform-menu"
+                        role="menu"
+                        aria-labelledby="platform-trigger"
+                        className="absolute left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl border bg-white shadow-lg py-2 z-50"
+                      >
                         {[
                           { name: "Amazon", slug: "amazon" },
                           { name: "Shopify", slug: "shopify" },
                           { name: "WooCommerce", slug: "woocommerce" },
                           { name: "CSV / Fichier", slug: "csv" },
                         ].map((p) => (
-                          <div
+                          <button
                             key={p.slug}
-                            className="px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#FF6A00] cursor-pointer"
+                            type="button"
+                            data-menu-item
+                            role="menuitem"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#FF6A00] cursor-pointer focus:outline-none focus:bg-orange-50"
+                            onClick={() => {
+                              track("platform_select", { platform: p.slug, location: "navbar_platform_dropdown" });
+                              setOpenPlatform(false);
+                            }}
                           >
                             {p.name}
-                          </div>
+                          </button>
                         ))}
                         <div className="px-4 pt-2">
                           <Link
@@ -94,6 +141,7 @@ export default function Navbar() {
                   key={item.href + item.label}
                   href={item.href}
                   className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-[#FF6A00] transition-colors duration-200"
+                  onClick={() => track("nav_click", { location: "navbar", label: item.label, href: item.href })}
                 >
                   {item.label}
                 </a>
