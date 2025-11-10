@@ -1,0 +1,13 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_not-found/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1dc67c46._.js")
+R.c("server/chunks/ssr/197bf_next_dist_814ca37c._.js")
+R.c("server/chunks/ssr/197bf_next_dist_esm_build_templates_app-page_c89478bb.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0dfba36c._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__13bf2efc._.js")
+R.c("server/chunks/ssr/197bf_next_dist_db1cd3da._.js")
+R.c("server/chunks/ssr/Desktop_AiMerchant_src_app_layout_tsx_a5d4601d._.js")
+R.c("server/chunks/ssr/197bf_next_dist_client_components_17e67c48._.js")
+R.c("server/chunks/ssr/197bf_next_dist_client_components_builtin_forbidden_f7bc4e5d.js")
+R.c("server/chunks/ssr/Desktop_AiMerchant__next-internal_server_app__not-found_page_actions_2945abf8.js")
+R.m(89461)
+module.exports=R.m(89461).exports

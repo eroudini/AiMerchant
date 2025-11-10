@@ -9,6 +9,7 @@ import authRouter from "./routes/auth.js";
 import productsRouter from "./routes/products.js";
 import pricingRouter from "./routes/pricing.js";
 import forecastRouter from "./routes/forecast.js";
+import profileRouter from "./routes/profile.js";
 
 const logger = pino({ name: "aimerchant-api" });
 
@@ -57,6 +58,7 @@ export function createApp() {
   app.use("/products", productsRouter);
   app.use("/pricing", pricingRouter);
   app.use("/forecast", forecastRouter);
+  app.use("/", profileRouter);
 
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error({ err }, "unhandled");

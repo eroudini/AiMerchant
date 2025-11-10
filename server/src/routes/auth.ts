@@ -35,10 +35,26 @@ router.post("/register", validate(registerSchema), async (req, res, next) => {
     const { firstName, lastName, email, password } = req.body;
     const pwd = await hashPassword(password);
     let user;
+    
+    // Vérifier d'abord si l'utilisateur existe
     if (prisma) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return res.status(409).json({
+          error: "Un compte existe déjà avec cette adresse email",
+          message: "Vous pouvez vous connecter directement avec votre email et mot de passe",
+          action: "login"
+        });
+      }
       user = await prisma.user.create({ data: { firstName, lastName, email, passwordHash: pwd } });
     } else {
-      if (memoryUsers.find((u) => u.email === email)) return res.status(409).json({ error: "Email exists" });
+      if (memoryUsers.find((u) => u.email === email)) {
+        return res.status(409).json({
+          error: "Un compte existe déjà avec cette adresse email",
+          message: "Vous pouvez vous connecter directement avec votre email et mot de passe",
+          action: "login"
+        });
+      }
       user = { id: String(memoryUsers.length + 1), firstName, lastName, email, passwordHash: pwd };
       memoryUsers.push(user);
     }
