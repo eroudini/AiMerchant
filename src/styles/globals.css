@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Inter font will be injected via next/font in root layout */
+
+:root {
+  --brand: #2563EB;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+}
+
+.container-responsive {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.card {
+  @apply rounded-2xl shadow-sm border border-gray-200 bg-white;
+}
+
+.muted {
+  @apply text-gray-500;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl bg-[color:var(--brand)] px-4 py-2 text-white hover:opacity-90 transition;
+}
+
+.badge {
+  @apply inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700;
+}
+
+/* Accessibility helpers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
