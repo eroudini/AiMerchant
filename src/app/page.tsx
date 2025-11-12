@@ -31,8 +31,14 @@ export default function Home() {
       {/* Navbar (même placement que page pricing) */}
       <Navbar />
       {/* Hero split avec orbe visuel */}
-      <section className="overflow-hidden py-20 md:py-24 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-[#F7F7F5] via-white to-[#FFF2E9]">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative overflow-hidden py-20 md:py-24 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-[#F7F7F5] via-white to-[#FFF2E9]">
+        {/* Fond image fourni */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-center bg-cover opacity-70"
+          style={{ backgroundImage: "url('/téléchargement.png')" }}
+        />
+        <div className="relative z-10 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
               <Sparkles className="w-3 h-3" /> IA appliquée au retail
