@@ -21,3 +21,13 @@ export function validateParams<T>(cls: new () => T): RequestHandler {
     next();
   };
 }
+
+export function validateBody<T>(cls: new () => T): RequestHandler {
+  return async (req, res, next) => {
+    const instance = plainToInstance(cls, req.body, { enableImplicitConversion: true });
+    const errors = await validate(instance as any, { whitelist: true, forbidUnknownValues: true });
+    if (errors.length) return res.status(400).json({ error: 'ValidationError', details: errors });
+    (req as any).validated = { ...(req as any).validated, body: instance };
+    next();
+  };
+}

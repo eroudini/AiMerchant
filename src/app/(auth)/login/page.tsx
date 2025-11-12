@@ -37,8 +37,8 @@ export default function LoginPage() {
         const fresh = await me();
         if ((fresh as any)?.id) setUser(fresh as any);
       } catch {}
-      toast.success("Connexion réussie");
-      window.location.href = "/app/dashboard";
+  toast.success("Connexion réussie");
+  window.location.href = "/dashboard";
     } catch (e: any) {
       toast.error(e?.response?.data?.message ?? "Échec de connexion");
     }

@@ -1,6 +1,5 @@
 "use client";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/api.client";
 import { useAuthStore } from "@/lib/auth-store";
 
 export default function DangerZonePage() {
@@ -12,7 +11,7 @@ export default function DangerZonePage() {
     try {
       // Si un endpoint /user/delete existait, on l'appellerait ici.
       // À défaut, on déconnecte pour simuler la suppression côté démo.
-      await apiClient.post("/auth/logout");
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       logout();
       toast.success("Compte supprimé (démo). Vous avez été déconnecté.");
       window.location.href = "/";

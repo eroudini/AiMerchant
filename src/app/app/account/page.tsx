@@ -6,6 +6,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { me, fetchKpis, fetchAlerts } from "@/lib/fetchers";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/auth-store";
+import { useRouter } from "next/navigation";
 
 // Schéma d'édition du profil utilisateur (champs étendus côté SaaS).
 // Note: Le backend actuel ne supporte que la mise à jour email & mot de passe.
@@ -26,6 +28,8 @@ export default function AccountPage() {
   const [plan] = useState<string>("Starter");
   const [usage, setUsage] = useState<{ products: number; alerts: number; suggestions: number }>({ products: 0, alerts: 0, suggestions: 0 });
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>([]);
+  const logout = useAuthStore((s) => s.logout);
+  const router = useRouter();
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema),
     defaultValues: { firstName: "", lastName: "", company: "", email: "" }
@@ -79,6 +83,17 @@ export default function AccountPage() {
 
   const copyKey = (key: string) => {
     navigator.clipboard.writeText(key).then(() => toast.success("Copié dans le presse-papier"));
+  };
+
+  const onLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      logout();
+      toast.success("Vous avez été déconnecté.");
+      router.push("/login");
+    } catch (e) {
+      toast.error("Échec de la déconnexion");
+    }
   };
 
   return (
@@ -186,6 +201,18 @@ export default function AccountPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+      {/* Déconnexion */}
+      <section className="pt-2">
+        <div className="max-w-xl">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 px-4 py-2 text-sm text-white/90 hover:bg-white/10"
+          >
+            Déconnexion
+          </button>
         </div>
       </section>
     </div>

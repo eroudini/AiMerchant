@@ -39,6 +39,7 @@
   "exclude": [
     "node_modules",
     "server/**",
+    "services/**",
     "src/components/ui/shadcn-io/**"
   ]
 }

@@ -45,6 +45,48 @@ const openApiDoc = {
         { name: "period", in: "query", required: true, schema: { type: "string", enum: ["last_7d","last_30d","last_90d"] } },
         { name: "country", in: "query", required: false, schema: { type: "string" } }
       ] } }
+      ,
+      "/bff/market/heatmap": { get: { summary: "Market heatmap by category (avg price & delta % vs previous week)", parameters: [
+        { name: "period", in: "query", required: true, schema: { type: "string", enum: ["last_7d"] } },
+        { name: "country", in: "query", required: false, schema: { type: "string" } }
+      ] } }
+      ,
+      "/bff/alerts/movements": { get: { summary: "Alerts for price/stock movements (last 7d vs previous 7d)", parameters: [
+        { name: "period", in: "query", required: true, schema: { type: "string", enum: ["last_7d"] } },
+        { name: "country", in: "query", required: false, schema: { type: "string" } },
+        { name: "types", in: "query", required: false, schema: { type: "string", example: "price,stock" } },
+        { name: "threshold", in: "query", required: false, schema: { type: "integer", example: 10 } },
+        { name: "limit", in: "query", required: false, schema: { type: "integer", example: 20 } }
+      ] } }
+      ,
+      "/bff/pricing/simulate": { get: { summary: "Simple revenue simulation for a price delta (elasticity-driven)", parameters: [
+        { name: "sku", in: "query", required: true, schema: { type: "string" } },
+        { name: "delta", in: "query", required: true, schema: { type: "number" }, description: "Percent delta, e.g. -5 or 10" },
+        { name: "country", in: "query", required: false, schema: { type: "string" } }
+      ] } }
+      ,
+      "/bff/stock/predict": { get: { summary: "Predict stockout date with avg daily sales and current stock", parameters: [
+        { name: "product", in: "query", required: true, schema: { type: "string" } },
+        { name: "lead_days", in: "query", required: false, schema: { type: "integer" }, description: "Supplier lead time in days (default 7)" },
+        { name: "country", in: "query", required: false, schema: { type: "string" } }
+      ] } }
+      ,
+      "/bff/radar/trends": { get: { summary: "ProductRadar trends (growth current window vs previous)", parameters: [
+        { name: "period", in: "query", required: true, schema: { type: "string", enum: ["last_30d","last_90d"] } },
+        { name: "type", in: "query", required: false, schema: { type: "string", enum: ["category","product"], default: "category" } },
+        { name: "country", in: "query", required: false, schema: { type: "string" } },
+        { name: "limit", in: "query", required: false, schema: { type: "integer" } }
+      ] } }
+      ,
+      "/bff/export/csv": { get: { summary: "Export data as CSV", parameters: [
+        { name: "resource", in: "query", required: true, schema: { type: "string", enum: ["radar_trends","market_heatmap","competitors_diff","alerts_movements"] } },
+        { name: "period", in: "query", required: false, schema: { type: "string" } },
+        { name: "type", in: "query", required: false, schema: { type: "string", enum: ["category","product"] } },
+        { name: "country", in: "query", required: false, schema: { type: "string" } },
+        { name: "limit", in: "query", required: false, schema: { type: "integer" } },
+        { name: "types", in: "query", required: false, schema: { type: "string", example: "price,stock" } },
+        { name: "threshold", in: "query", required: false, schema: { type: "integer" } }
+      ] } }
   }
 };
 

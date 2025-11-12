@@ -1,6 +1,5 @@
 "use client";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/api.client";
 import { useAuthStore } from "@/lib/auth-store";
 
 export default function DangerZonePage() {
@@ -10,7 +9,7 @@ export default function DangerZonePage() {
     const ok = window.confirm("Supprimer définitivement votre compte ? Cette action est irréversible.");
     if (!ok) return;
     try {
-      await apiClient.post("/auth/logout");
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       logout();
       toast.success("Compte supprimé (démo). Vous avez été déconnecté.");
       window.location.href = "/";

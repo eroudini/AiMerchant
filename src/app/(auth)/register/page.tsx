@@ -4,11 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterInput } from "@/lib/validations";
 import { apiClient } from "@/lib/api.client";
 import { toast } from "sonner";
+import { useAuthStore } from "@/lib/auth-store";
+import { me } from "@/lib/fetchers";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
+  const setToken = useAuthStore((s) => s.setToken);
+  const setUser = useAuthStore((s) => s.setUser);
   const [features, setFeatures] = useState<string[]>([]);
   const { register, handleSubmit, trigger, getValues, formState: { errors, isSubmitting } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema), mode: "onTouched" });
 
@@ -30,12 +34,20 @@ export default function RegisterPage() {
     try {
       const payload = { company: values.company, firstName: values.firstName, lastName: values.lastName, email: values.email, password: values.password };
       const res = await apiClient.post("/auth/register", payload);
-      if ((res.data as any)?.requiresEmailVerification) {
-        toast.success("Inscription réussie. Vérifiez votre email.");
-      } else {
-        toast.success("Inscription réussie.");
+      const needsVerification = !!(res.data as any)?.requiresEmailVerification;
+      toast.success(needsVerification ? "Inscription réussie. Vérifiez votre email." : "Inscription réussie.");
+      // Tentative d'auto‑connexion pour rediriger vers /dashboard
+      try {
+        const loginRes = await apiClient.post("/auth/login", { email: values.email, password: values.password });
+        const { user, accessToken } = loginRes.data as any;
+        setToken(accessToken ?? null);
+        setUser(user ?? null);
+        try { const fresh = await me(); if ((fresh as any)?.id) setUser(fresh as any); } catch {}
+        window.location.href = "/dashboard";
+      } catch {
+        // Si auto‑login impossible (ex: vérif email requise), fallback vers /login
+        window.location.href = "/login";
       }
-      window.location.href = "/login";
     } catch (e: any) {
       toast.error(e?.response?.data?.message ?? "Échec de l'inscription");
     }

@@ -14,3 +14,16 @@ export const requireAuth = (req, res, next) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
 };
+export function requireRole(role) {
+    return (req, res, next) => {
+        const user = req.user;
+        if (!user)
+            return res.status(401).json({ error: 'Unauthorized' });
+        const r = user.role || 'viewer';
+        if (role === 'viewer')
+            return next();
+        if (role === 'admin' && r === 'admin')
+            return next();
+        return res.status(403).json({ error: 'Forbidden' });
+    };
+}

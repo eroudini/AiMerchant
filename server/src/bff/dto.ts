@@ -46,3 +46,145 @@ export class CompetitorsDiffQueryDto {
   @IsOptional()
   country?: string;
 }
+
+export class MarketHeatmapQueryDto {
+  @IsEnum({ last_7d: 'last_7d' })
+  period!: 'last_7d';
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+}
+
+export class AlertsMovementsQueryDto {
+  @IsEnum({ last_7d: 'last_7d' })
+  period!: 'last_7d';
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  // comma separated: price,stock
+  @IsOptional()
+  @Matches(/^(price|stock)(,(price|stock))*$/)
+  types?: string;
+
+  // percentage threshold as integer string
+  @IsOptional()
+  @Matches(/^\d+$/)
+  threshold?: string;
+
+  // max items
+  @IsOptional()
+  @Matches(/^\d+$/)
+  limit?: string;
+}
+
+export class PricingSimulateQueryDto {
+  @IsString()
+  sku!: string; // product_code
+
+  // delta percentage, e.g., -5 or 10
+  @Matches(/^-?\d+(\.\d+)?$/)
+  delta!: string;
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+}
+
+export class PricingSuggestQueryDto {
+  @IsString()
+  sku!: string;
+
+  // target margin between 0 and 1
+  @Matches(/^0(\.\d+)?|1(\.0+)?$/)
+  target!: string;
+
+  // optional clamp around competitor price (e.g., 0.05 for +/-5%)
+  @IsOptional()
+  @Matches(/^0(\.\d+)?|1(\.0+)?$/)
+  clamp?: string;
+
+  // costs if not retrievable server-side
+  @Matches(/^\d+(\.\d+)?$/)
+  buy!: string;
+
+  @Matches(/^\d+(\.\d+)?$/)
+  fees!: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+}
+
+export class PricingApplyBodyDto {
+  @IsString()
+  sku!: string;
+
+  @Matches(/^\d+(\.\d+)?$/)
+  new_price!: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
+}
+
+export class StockPredictQueryDto {
+  @IsString()
+  product!: string; // product_code
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  lead_days?: string; // optional lead time in days
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+}
+
+export class ProductRadarTrendsQueryDto {
+  @IsEnum({ last_30d: 'last_30d', last_90d: 'last_90d' })
+  period!: 'last_30d' | 'last_90d';
+
+  @IsOptional()
+  @IsIn(['category','product'])
+  type?: 'category' | 'product';
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  limit?: string;
+}
+
+export class ExportCsvQueryDto {
+  @IsIn(['radar_trends','market_heatmap','competitors_diff','alerts_movements'])
+  resource!: 'radar_trends'|'market_heatmap'|'competitors_diff'|'alerts_movements';
+
+  @IsOptional()
+  @IsString()
+  period?: string;
+
+  @IsOptional()
+  @IsIn(['category','product'])
+  type?: 'category'|'product';
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  limit?: string;
+
+  @IsOptional()
+  @Matches(/^(price|stock)(,(price|stock))*$/)
+  types?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  threshold?: string;
+}
