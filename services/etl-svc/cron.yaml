@@ -1,0 +1,12 @@
+# cron.yaml - simple cron schedule (Kubernetes CronJob, Cloud Run Jobs, etc. map this as needed)
+# Times are UTC
+jobs:
+  - name: etl-amazon-daily
+    schedule: "15 * * * *" # hourly at :15, intra-day collection
+    command: ["npm", "run", "etl.run", "--", "amazon"]
+    envFrom: .env
+
+  - name: etl-shopify-daily
+    schedule: "5 * * * *" # hourly at :05
+    command: ["npm", "run", "etl.run", "--", "shopify"]
+    envFrom: .env

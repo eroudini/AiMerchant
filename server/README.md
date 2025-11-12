@@ -33,4 +33,16 @@ pnpm dev
 - `POST /pricing/suggest` `{ buyPrice,fees,competitorPrice,marginMin,marginMax }`
 - `POST /forecast/stockout` `{ stock,avgDailySales }`
 
+### BFF (read-only KPIs)
+
+- `GET /bff/kpi/overview?period=last_7d&country=FR` → `{ gmv, net_margin, units, aov }`
+- `GET /bff/products/:id/timeseries?metrics=sales,price,stock&from=...&to=...&granularity=day&order=asc&limit=500`
+- `GET /bff/competitors/diff?period=last_7d&country=FR`
+
+Auth: cookie `access_token` (JWT) avec claims `{ sub, account_id?, role? }`. RBAC minimal: `viewer` ou `admin`.
+
+Métriques: `GET /metrics` (Prometheus). Tracing simple via header/response `X-Trace-Id`.
+
+DB analytique: Le BFF lit dans PostgreSQL/Timescale via `ANALYTICS_DATABASE_URL`. Exemple de seed: `server/sql/seed_analytics.sql`.
+
 Notes: si Prisma/DB non configurés, l’API fonctionne en mémoire (MVP). Configure `DATABASE_URL` puis `pnpm prisma:migrate` pour activer Postgres.

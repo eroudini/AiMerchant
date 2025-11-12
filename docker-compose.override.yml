@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  bff:
+    build:
+      context: .
+      dockerfile: apps/bff/Dockerfile
+    environment:
+      - PORT=4000
+      - JWT_SECRET=dev-secret
+      - CORS_ORIGIN=http://localhost:3000
+      - ANALYTICS_DATABASE_URL=postgres://user:password@host.docker.internal:5432/aimerchant
+    ports:
+      - "4000:4000"
+    restart: unless-stopped

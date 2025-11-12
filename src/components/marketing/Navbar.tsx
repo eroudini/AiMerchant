@@ -6,9 +6,9 @@ import { track } from "@/lib/analytics";
 
 const navItems = [
   { href: "#platform", label: "Plateforme", dropdown: true },
-  { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Tarification" }, // déplacé vers page dédiée
   { href: "#faq", label: "FAQ" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export default function Navbar() {

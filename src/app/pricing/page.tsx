@@ -1,8 +1,15 @@
 import React from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import Navbar from "@/components/marketing/Navbar";
 
 export default function PricingPage() {
+  const plans = [
+    { name: "Starter", price: "19€", blurb: "Pour démarrer.", features: ["500 produits", "Rapports de base", "1 utilisateur", "Support email"], cta: "Commencer", popular: false },
+    { name: "Pro", price: "59€", blurb: "Le plus populaire.", features: ["5 000 produits", "Rapports avancés", "3 utilisateurs", "Alertes IA", "Support prioritaire"], cta: "Choisir Pro", popular: true },
+    { name: "Enterprise", price: "Sur devis", blurb: "À grande échelle.", features: ["Illimité", "SLA", "SSO/SAML", "Intégrations", "CSM dédié"], cta: "Parler à un expert", popular: false }
+  ] as const;
+
   return (
     <>
   <Navbar />
@@ -15,52 +22,63 @@ export default function PricingPage() {
           la prévision stock avancée, les scénarios marge et un copilote IA connecté à vos données.
         </p>
       </div>
-  <div className="grid md:grid-cols-2 gap-8">
-        {/* Free */}
-        <div className="border border-white/10 rounded-2xl p-8 bg-white/5 flex flex-col shadow-sm">
-          <h2 className="text-xl font-medium mb-1">Gratuit</h2>
-          <p className="text-xs text-neutral-400 mb-5">Pour découvrir et tester avant engagement.</p>
-          <ul className="text-sm space-y-2 mb-8">
-            <li className="flex gap-2"><span className="text-[#FF6A00]">✔</span> Dashboard basique (ventes, stock, marge)</li>
-            <li className="flex gap-2"><span className="text-[#FF6A00]">✔</span> Recos réassort simples</li>
-            <li className="flex gap-2"><span className="text-[#FF6A00]">✔</span> Export CSV</li>
-            <li className="flex gap-2 opacity-60"><span>✖</span> Pricing dynamique</li>
-            <li className="flex gap-2 opacity-60"><span>✖</span> Prévisions IA multi‑horizon</li>
-            <li className="flex gap-2 opacity-60"><span>✖</span> Chat IA personnalisé</li>
-            <li className="flex gap-2 opacity-60"><span>✖</span> Simulation marge / stock</li>
-          </ul>
-          <Link
-            href="/register"
-            className="mt-auto inline-flex items-center justify-center rounded-full bg-[#FF6A00] text-white text-sm font-medium px-6 py-3 hover:bg-[#e45f00] transition-colors"
-          >
-            Créer mon compte
-          </Link>
-        </div>
-        {/* Pro */}
-        <div className="border border-white/10 rounded-2xl p-8 bg-white/5 text-white flex flex-col relative overflow-hidden">
-          <div
-            className="absolute inset-0 pointer-events-none opacity-20"
-            style={{ background: "radial-gradient(circle at 40% 30%, #FF6A00 0%, transparent 60%)" }}
-          />
-          <h2 className="text-xl font-medium mb-1 relative">Pro</h2>
-          <p className="text-xs text-neutral-400 mb-5 relative">Automatisations & accélération décisionnelle.</p>
-          <div className="text-4xl font-semibold mb-6 relative">99€<span className="text-base font-normal"> / mois</span></div>
-          <ul className="text-sm space-y-2 mb-8 relative">
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> Tout du plan Gratuit</li>
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> Pricing dynamique piloté par IA</li>
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> Prévisions de demande multi‑horizon</li>
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> Scénarios marge / stock simulés</li>
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> Chat IA sur vos données</li>
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> Support prioritaire</li>
-            <li className="flex gap-2"><span className="text-[#FFB380]">✔</span> API & webhooks</li>
-          </ul>
-          <Link
-            href="/register"
-            className="mt-auto inline-flex items-center justify-center rounded-full bg-white text-[#FF6A00] text-sm font-medium px-6 py-3 hover:bg-gray-100 transition-colors relative"
-          >
-            Essayer le plan Pro
-          </Link>
-        </div>
+  <div className="grid md:grid-cols-3 gap-8" role="list" aria-label="Plans tarifaires">
+        {plans.map((plan) => {
+          const isPro = plan.popular;
+          const isEnterprise = plan.name === "Enterprise";
+          return (
+            <div
+              key={plan.name}
+              role="listitem"
+              data-popular={isPro ? "true" : undefined}
+              className={[
+                "relative border rounded-2xl p-8 bg-white/5 text-white flex flex-col overflow-visible",
+                "border-white/10",
+                isPro ? "ring-2 ring-[#FF6A00] shadow-lg" : "shadow-sm",
+              ].join(" ")}
+            >
+              {isPro && (
+                <span
+                  role="status"
+                  className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 z-20 select-none rounded-full border border-white/20 bg-black/80 px-3 py-1 text-xs text-white shadow"
+                >
+                  ⭐ Le plus populaire ⭐
+                </span>
+              )}
+
+              <h2 className="text-xl font-medium mb-1">{plan.name}</h2>
+              <p className="text-xs text-neutral-400 mb-5">{plan.blurb}</p>
+              <div className="text-4xl font-semibold mb-6">
+                {plan.price}
+                {plan.price !== "Sur devis" && (
+                  <span className="text-base font-normal"> / mois</span>
+                )}
+              </div>
+
+              <ul className="text-sm space-y-2 mb-8">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check aria-hidden="true" className="w-4 h-4 mt-0.5 text-orange-400" />
+                    <span className="text-neutral-300">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href={isEnterprise ? "/contact" : "/register"}
+                aria-label={`${plan.cta} - Plan ${plan.name}`}
+                className={[
+                  "mt-auto inline-flex items-center justify-center rounded-full text-sm font-medium px-6 py-3 transition-colors",
+                  isPro
+                    ? "bg-[#FF6A00] text-white hover:bg-[#e45f00]"
+                    : "border border-white/20 text-white/90 hover:bg-white/10",
+                ].join(" ")}
+              >
+                {plan.cta}
+              </Link>
+            </div>
+          );
+        })}
       </div>
 
       {/* Comparatif */}
@@ -71,25 +89,26 @@ export default function PricingPage() {
             <thead className="bg-white/10 text-neutral-300">
               <tr>
                 <th className="text-left font-medium px-4 py-3">Fonction</th>
-                <th className="text-left font-medium px-4 py-3">Gratuit</th>
+                <th className="text-left font-medium px-4 py-3">Starter</th>
                 <th className="text-left font-medium px-4 py-3">Pro</th>
+                <th className="text-left font-medium px-4 py-3">Enterprise</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["Dashboard basique", "✔", "✔"],
-                ["Recos réassort", "Basique", "Avancées"],
-                ["Pricing dynamique", "—", "✔"],
-                ["Prévision IA", "—", "✔"],
-                ["Simulation marge / stock", "—", "✔"],
-                ["Chat IA personnalisé", "—", "✔"],
-                ["API & webhooks", "—", "✔"],
-                ["Support", "Standard", "Prioritaire"],
+                ["Produits inclus", "500", "5 000", "Illimité"],
+                ["Rapports", "De base", "Avancés", "Avancés"],
+                ["Utilisateurs", "1", "3", "Illimité"],
+                ["Alertes IA", "—", "✔", "✔"],
+                ["Support", "Email", "Prioritaire", "SLA + CSM"],
+                ["SSO/SAML", "—", "—", "✔"],
+                ["Intégrations/API", "Limité", "Complet", "Complet"],
               ].map((row) => (
                 <tr key={row[0]} className="border-t border-white/10">
                   <td className="px-4 py-3 font-medium text-neutral-300">{row[0]}</td>
                   <td className="px-4 py-3 text-neutral-400">{row[1]}</td>
                   <td className="px-4 py-3 text-white">{row[2]}</td>
+                  <td className="px-4 py-3 text-white">{row[3]}</td>
                 </tr>
               ))}
             </tbody>

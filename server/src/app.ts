@@ -10,6 +10,9 @@ import productsRouter from "./routes/products.js";
 import pricingRouter from "./routes/pricing.js";
 import forecastRouter from "./routes/forecast.js";
 import profileRouter from "./routes/profile.js";
+import bffRouter from "./routes/bff.js";
+import { metricsMiddleware, metricsRouter } from "./metrics.js";
+import { traceMiddleware } from "./middleware/trace.js";
 
 const logger = pino({ name: "aimerchant-api" });
 
@@ -24,7 +27,24 @@ const openApiDoc = {
     "/auth/me": { get: { summary: "Current user" } },
     "/products": { get: { summary: "List products" }, post: { summary: "Create product" } },
     "/pricing/suggest": { post: { summary: "Suggest price" } },
-    "/forecast/stockout": { post: { summary: "Stockout days" } }
+      "/forecast/stockout": { post: { summary: "Stockout days" } },
+      "/bff/kpi/overview": { get: { summary: "KPIs overview (GMV, net margin, units, AOV)", parameters: [
+        { name: "period", in: "query", required: true, schema: { type: "string", enum: ["last_7d","last_30d","last_90d"] } },
+        { name: "country", in: "query", required: false, schema: { type: "string" } }
+      ] } },
+      "/bff/products/{id}/timeseries": { get: { summary: "Product timeseries (sales/price/stock)", parameters: [
+        { name: "id", in: "path", required: true, schema: { type: "string" } },
+        { name: "metrics", in: "query", required: true, schema: { type: "string", example: "sales,stock" } },
+        { name: "from", in: "query", required: true, schema: { type: "string", format: "date-time" } },
+        { name: "to", in: "query", required: true, schema: { type: "string", format: "date-time" } },
+        { name: "granularity", in: "query", required: false, schema: { type: "string", enum: ["day","hour"], default: "day" } },
+        { name: "order", in: "query", required: false, schema: { type: "string", enum: ["asc","desc"], default: "asc" } },
+        { name: "limit", in: "query", required: false, schema: { type: "integer" } }
+      ] } },
+      "/bff/competitors/diff": { get: { summary: "Competitor price diff over period", parameters: [
+        { name: "period", in: "query", required: true, schema: { type: "string", enum: ["last_7d","last_30d","last_90d"] } },
+        { name: "country", in: "query", required: false, schema: { type: "string" } }
+      ] } }
   }
 };
 
@@ -32,6 +52,8 @@ export function createApp() {
   const app = express();
   app.set("trust proxy", 1);
   app.use(helmet());
+  app.use(traceMiddleware);
+  app.use(metricsMiddleware);
 
   const allowList = (process.env.CORS_ORIGIN || "http://localhost:3000").split(",").map(s=>s.trim());
   const localhostRegex = /^http:\/\/localhost:\d+$/;
@@ -53,12 +75,14 @@ export function createApp() {
 
   app.get("/health", (_req, res) => res.json({ ok: true }));
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
+  app.use("/metrics", metricsRouter);
 
   app.use("/auth", authRouter);
   app.use("/products", productsRouter);
   app.use("/pricing", pricingRouter);
   app.use("/forecast", forecastRouter);
   app.use("/", profileRouter);
+  app.use("/bff", bffRouter);
 
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error({ err }, "unhandled");

@@ -1,0 +1,26 @@
+name: etl-ci
+
+on:
+  push:
+    paths:
+      - 'services/etl-svc/**'
+  pull_request:
+    paths:
+      - 'services/etl-svc/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/etl-svc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Build
+        run: npm run build
