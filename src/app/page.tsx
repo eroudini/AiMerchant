@@ -35,8 +35,8 @@ export default function Home() {
         {/* Fond image fourni */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-center bg-cover opacity-80"
-          style={{ backgroundImage: "url('/hero/orb-dotted.png')" }}
+          className="absolute inset-0 -z-10 bg-center bg-cover opacity-80 origin-center motion-safe:animate-[spin_60s_linear_infinite]"
+          style={{ backgroundImage: "url('/hero/banniere.png')" }}
         />
         <div className="relative z-10 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
