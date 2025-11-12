@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={inter.className}>
-      <body>
+      <body className="bg-neutral-950 text-neutral-100 theme-dark">
         <Providers>
           {/* Zone aria-live pour messages d'état accessibles (toasts, validations) */}
           <div id="app-status" aria-live="polite" className="sr-only" />

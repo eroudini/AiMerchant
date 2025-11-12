@@ -24,30 +24,30 @@ function VerifyEmailInner() {
   }, [token]);
 
   return (
-    <div className="max-w-md mx-auto card p-6 text-center">
+    <div className="max-w-md mx-auto card p-6 text-center bg-white/5 border-white/10">
       {status === "loading" && <Loader label="Vérification en cours..." />}
       {status === "success" && (
         <>
           <h1 className="text-2xl font-semibold mb-2">Email vérifié</h1>
-          <p className="text-gray-600 mb-4">Votre adresse e-mail a bien été vérifiée.</p>
+          <p className="text-neutral-400 mb-4">Votre adresse e-mail a bien été vérifiée.</p>
           <Link className="btn-primary" href="/login">Se connecter</Link>
         </>
       )}
       {status === "error" && (
         <>
           <h1 className="text-2xl font-semibold mb-2">Lien invalide</h1>
-          <p className="text-gray-600 mb-4">Le lien de vérification semble invalide ou expiré.</p>
+          <p className="text-neutral-400 mb-4">Le lien de vérification semble invalide ou expiré.</p>
           <Link className="btn-primary" href="/login">Retour</Link>
         </>
       )}
-      {status === "idle" && <p className="text-gray-600">Token manquant.</p>}
+      {status === "idle" && <p className="text-neutral-400">Token manquant.</p>}
     </div>
   );
 }
 
 export default function VerifyEmailPage() {
   return (
-    <main className="container-responsive py-12">
+    <main className="min-h-screen flex items-center justify-center px-6 py-12">
       <Suspense fallback={<div>Chargement...</div>}>
         <VerifyEmailInner />
       </Suspense>

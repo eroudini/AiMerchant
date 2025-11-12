@@ -43,9 +43,9 @@ export default function Navbar() {
 
   return (
     <nav
-      className={` ${
+      className={`fixed inset-x-0 top-0 z-50 ${
         scrolled
-          ? "bg-white/70 backdrop-blur-md border-b border-gray-200 shadow-sm"
+          ? "bg-black/40 backdrop-blur-md border-b border-white/10 shadow-sm"
           : "bg-transparent"
       }`}
     >
@@ -60,13 +60,13 @@ export default function Navbar() {
             <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF6A00] to-[#FF9330] text-white shadow-md transition-transform duration-300 group-hover:rotate-6">
               <Sparkles className="w-5 h-5" aria-hidden="true" />
             </div>
-            <span className="font-semibold text-lg tracking-tight text-gray-900 group-hover:text-[#FF6A00] transition-colors duration-200">
+            <span className="font-semibold text-lg tracking-tight text-white group-hover:text-[#FF6A00] transition-colors duration-200">
               AIMerchant
             </span>
           </Link>
 
           {/* ==== NAVIGATION ==== */}
-          <div className="hidden md:flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full shadow-sm h-11 px-2 ml-6 lg:ml-12 relative">
+          <div className="hidden md:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full shadow-sm h-11 px-2 ml-6 lg:ml-12 relative text-white">
             {navItems.map((item) => {
               if (item.dropdown) {
                 return (
@@ -79,7 +79,7 @@ export default function Navbar() {
                       aria-controls="platform-menu"
                       onClick={() => setOpenPlatform((o) => !o)}
                       onBlur={() => setTimeout(() => setOpenPlatform(false), 150)}
-                      className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-[#FF6A00] transition-colors duration-200 flex items-center gap-1"
+                      className="px-5 py-2 text-sm font-medium text-white/80 hover:text-[#FF6A00] transition-colors duration-200 flex items-center gap-1"
                       onKeyDown={(e) => {
                         if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
@@ -100,7 +100,7 @@ export default function Navbar() {
                         id="platform-menu"
                         role="menu"
                         aria-labelledby="platform-trigger"
-                        className="absolute left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl border bg-white shadow-lg py-2 z-50"
+                        className="absolute left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl border border-white/10 bg-black/80 backdrop-blur-md shadow-lg py-2 z-50"
                       >
                         {[
                           { name: "Amazon", slug: "amazon" },
@@ -113,7 +113,7 @@ export default function Navbar() {
                             type="button"
                             data-menu-item
                             role="menuitem"
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#FF6A00] cursor-pointer focus:outline-none focus:bg-orange-50"
+                            className="w-full text-left px-4 py-2 text-sm text-white/90 hover:bg-white/10 hover:text-[#FF6A00] cursor-pointer focus:outline-none focus:bg-white/10"
                             onClick={() => {
                               track("platform_select", { platform: p.slug, location: "navbar_platform_dropdown" });
                               setOpenPlatform(false);
@@ -140,7 +140,7 @@ export default function Navbar() {
                 <a
                   key={item.href + item.label}
                   href={item.href}
-                  className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-[#FF6A00] transition-colors duration-200"
+                  className="px-5 py-2 text-sm font-medium text-white/80 hover:text-[#FF6A00] transition-colors duration-200"
                   onClick={() => track("nav_click", { location: "navbar", label: item.label, href: item.href })}
                 >
                   {item.label}
@@ -154,7 +154,7 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => track("cta_click", { location: "navbar", label: "Connexion", href: "/login" })}
-              className="hidden sm:inline-block px-5 py-2.5 rounded-full border border-gray-900 text-gray-900 text-sm font-medium hover:bg-gray-100 transition-all duration-200"
+              className="hidden sm:inline-block px-5 py-2.5 rounded-full border border-white/20 text-white text-sm font-medium hover:bg-white/10 transition-all duration-200"
             >
               Connexion
             </Link>

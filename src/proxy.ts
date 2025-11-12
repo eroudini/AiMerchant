@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
+// Proxy (ex-middleware) d'authentification pour sécuriser les routes /app
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  // Protect /app/* routes
   if (pathname.startsWith("/app")) {
-    // Aligner sur le nom de cookie utilisé par le backend et nos proxys: "access_token"
     const token = req.cookies.get("access_token")?.value;
     if (!token) {
       const loginUrl = new URL("/login", req.url);
@@ -16,7 +15,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/app/:path*",
-  ],
+  matcher: ["/app/:path*"],
 };

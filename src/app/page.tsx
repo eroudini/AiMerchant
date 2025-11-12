@@ -3,6 +3,7 @@ import { Sparkles, BarChart3, LineChart, AlertTriangle, MessageSquare, TrendingU
 import OrbVisual from "@/components/visual/OrbVisual";
 import Navbar from "@/components/marketing/Navbar";
 import CtaLink from "@/components/marketing/CtaLinks";
+import Testimonial from "@/components/marketing/Testimonial";
 
 export default function Home() {
   const features = [
@@ -27,28 +28,27 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col pt-16 bg-gradient-to-b from-[#0B0B10] via-[#0A0A0F] to-black text-white">
       {/* Navbar (même placement que page pricing) */}
       <Navbar />
       {/* Hero split avec orbe visuel */}
-      <section className="relative overflow-hidden py-20 md:py-24 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-[#F7F7F5] via-white to-[#FFF2E9]">
+  <section className="relative overflow-hidden pt-12 md:pt-16 pb-16 md:pb-20 px-6 sm:px-8 lg:px-12">
         {/* Fond image fourni */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-center bg-cover opacity-80 origin-center motion-safe:animate-[spin_60s_linear_infinite]"
+          className="absolute inset-0 -z-10 bg-center bg-cover opacity-15 origin-center motion-safe:animate-[spin_60s_linear_infinite]"
           style={{ backgroundImage: "url('/hero/banniere.png')" }}
         />
-        <div className="relative z-10 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+  <div className="relative z-10 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
               <Sparkles className="w-3 h-3" /> IA appliquée au retail
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#121212]">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white">
               Dominez votre marché e‑commerce avec l’IA
             </h1>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              AiMerchant analyse votre catalogue, la vitesse de vente et la concurrence pour prioriser
-              réassort, ajustements de prix et optimisations produit — sans tableur.
+            <p className="text-lg text-neutral-300 leading-relaxed">
+              L’IA qui priorise réassort, prix et actions catalogue pour plus de marge — sans Excel.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <CtaLink
@@ -63,37 +63,47 @@ export default function Home() {
                 href="/register"
                 location="hero"
                 eventLabel="Commencer"
-                className="px-6 py-3 rounded-full border border-gray-300 text-sm font-medium hover:bg-gray-50"
+                className="px-6 py-3 rounded-full border border-white/20 text-white/90 text-sm font-medium hover:bg-white/10"
               >
                 Commencer
               </CtaLink>
             </div>
-            <div className="flex gap-8 pt-2 opacity-70">
-              {["NovaShop","Electro+","Maison&Co","Batterix","CablePro"].map((l) => (
-                <div key={l} className="text-sm font-semibold text-gray-400">{l}</div>
-              ))}
+            {/* Preuve sociale alternative (sans prétendre des clients) */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 text-sm text-neutral-400">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">Bêta ouverte</span>
+              <span className="text-neutral-600">•</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">14 jours d’essai — sans CB</span>
+              <span className="text-neutral-600">•</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">Hébergement UE — RGPD</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[13px] text-neutral-400">
+              <span className="opacity-80">Fonctionne avec</span>
+              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/80">Shopify</span>
+              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/80">Amazon</span>
+              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/80">WooCommerce</span>
+              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/80">CSV</span>
             </div>
           </div>
           <OrbVisual />
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#FF6A00] to-transparent opacity-60" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#FF6A00]/30 to-transparent opacity-60" />
       </section>
 
         {/* (Section pricing déplacée sur /pricing) */}
       {/* Features */}
-      <section id="features" className="py-20 px-6 bg-gray-50">
+      <section id="features" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold text-center mb-12">Tout ce qu'il faut pour piloter votre catalogue</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="card p-5 border rounded-xl bg-white flex flex-col gap-3">
+                <div key={f.title} className="card p-5 border border-white/10 rounded-xl bg-white/5 flex flex-col gap-3">
                   <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-indigo-600" />
+                    <Icon className="w-4 h-4 text-orange-400" />
                     <h3 className="font-medium">{f.title}</h3>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-neutral-400 leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -109,10 +119,10 @@ export default function Home() {
             {how.map((h) => {
               const Icon = h.icon;
               return (
-                <div key={h.title} className="card p-6 rounded-xl border bg-white flex flex-col gap-3">
-                  <Icon className="w-5 h-5 text-indigo-600" />
+                <div key={h.title} className="card p-6 rounded-xl border border-white/10 bg-white/5 flex flex-col gap-3">
+                  <Icon className="w-5 h-5 text-orange-400" />
                   <div className="font-medium">{h.title}</div>
-                  <p className="text-sm text-gray-600">{h.desc}</p>
+                  <p className="text-sm text-neutral-400">{h.desc}</p>
                 </div>
               );
             })}
@@ -124,16 +134,16 @@ export default function Home() {
       <section id="stats" className="py-16 px-6">
         <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.label} className="card p-6 rounded-xl border flex flex-col items-center text-center gap-2">
-              <div className="text-3xl font-bold text-indigo-600">{s.value}</div>
-              <div className="text-xs uppercase tracking-wide text-gray-500">{s.label}</div>
+            <div key={s.label} className="card p-6 rounded-xl border border-white/10 bg-white/5 flex flex-col items-center text-center gap-2">
+              <div className="text-3xl font-bold text-orange-400">{s.value}</div>
+              <div className="text-xs uppercase tracking-wide text-neutral-400">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 px-6 bg-white">
+      <section id="faq" className="py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold text-center mb-12">Questions fréquentes</h2>
           <div className="grid gap-4 md:gap-6 md:grid-cols-2">
@@ -171,35 +181,21 @@ export default function Home() {
                 a: "Dépend du catalogue et des volumes, mais les cas d’usage typiques combinent +10–15% de marge moyenne et −30% de ruptures évitées. Un essai de 14 jours permet d’estimer votre ROI sur vos propres données.",
               },
             ].map((item) => (
-              <details key={item.q} className="group rounded-xl border bg-white p-5 open:shadow-sm transition-all">
+              <details key={item.q} className="group rounded-xl border border-white/10 bg-white/5 p-5 open:shadow-sm transition-all">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-                  <span className="font-medium text-gray-900">{item.q}</span>
-                  <span className="shrink-0 rounded-full border px-2 py-0.5 text-xs text-gray-500 group-open:hidden">+</span>
-                  <span className="shrink-0 rounded-full border px-2 py-0.5 text-xs text-gray-500 hidden group-open:inline">–</span>
+                  <span className="font-medium text-white">{item.q}</span>
+                  <span className="shrink-0 rounded-full border border-white/20 px-2 py-0.5 text-xs text-neutral-400 group-open:hidden">+</span>
+                  <span className="shrink-0 rounded-full border border-white/20 px-2 py-0.5 text-xs text-neutral-400 hidden group-open:inline">–</span>
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">{item.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-neutral-400">{item.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Témoignage */}
-      <section className="py-20 px-6 bg-gradient-to-b from-white to-indigo-50">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-          <blockquote className="text-lg text-gray-700 leading-relaxed">
-            « Avant AiMerchant nous passions des heures à estimer nos besoins de stock. Maintenant les alertes
-            réassort et les suggestions de prix sont intégrées à notre routine quotidienne. »
-          </blockquote>
-          <div className="flex items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-200" />
-            <div className="text-sm text-gray-600 text-left">
-              <div className="font-medium">Claire D.</div>
-              <div>Responsable e-commerce</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Témoignage animé */}
+  <Testimonial />
 
       {/* CTA finale */}
       <section id="cta" className="py-24 px-6">
