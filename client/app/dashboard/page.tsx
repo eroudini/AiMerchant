@@ -51,7 +51,7 @@ export default async function DashboardPage() {
           <KpiCards data={overview} />
           <div className="grid grid-cols-1 gap-6">
             <AlertsList rows={alerts} />
-            <SmartMarginCard country={country} />
+            <SmartMarginCard country={country} /> 
             <ProductRadar rowsProduct={radarProduct} rowsCategory={radarCategory} period="last_30d" />
             <StockPredictorCard country={country} />
             <MarketHeatmap rows={heatmap} />

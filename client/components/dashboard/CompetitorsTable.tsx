@@ -1,9 +1,29 @@
+"use client";
+import { useMemo, useState } from 'react';
 type Row = { competitor_id: string; avg_diff: number; observations: number };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
+export default function CompetitorsTable({ rows, country = 'FR', period = 'last_7d', category }: { rows: Row[]; country?: string; period?: 'last_7d'|'last_30d'|'last_90d'; category?: string }) {
+  const params = new URLSearchParams({ resource: 'competitors_diff', period, country });
+  if (category) params.set('category', category);
+  const exportHref = `${API_BASE}/bff/export/csv?${params.toString()}`;
 
-export default function CompetitorsTable({ rows, country = 'FR', period = 'last_7d' }: { rows: Row[]; country?: string; period?: 'last_7d'|'last_30d'|'last_90d' }) {
-  const exportHref = `${API_BASE}/bff/export/csv?resource=competitors_diff&period=${period}&country=${encodeURIComponent(country)}`;
+  type SortKey = 'avg_diff'|'observations';
+  const [sort, setSort] = useState<{ key: SortKey; dir: 'asc'|'desc' } | null>(null);
+  const data = useMemo(() => {
+    const base = (rows || []).slice(0, 50);
+    if (!sort) return base.slice(0, 10);
+    const sorted = base.slice().sort((a,b) => {
+      const va = a[sort.key]; const vb = b[sort.key];
+      const cmp = va === vb ? 0 : (va < vb ? -1 : 1);
+      return sort.dir === 'asc' ? cmp : -cmp;
+    });
+    return sorted.slice(0, 10);
+  }, [rows, sort]);
+  const toggle = (key: SortKey) => setSort((cur) => {
+    if (!cur || cur.key !== key) return { key, dir: 'desc' };
+    return { key, dir: cur.dir === 'desc' ? 'asc' : 'desc' };
+  });
   return (
     <div className="rounded-xl border border-white/10 bg-neutral-900/60 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] backdrop-blur supports-[backdrop-filter]:bg-neutral-900/40">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
@@ -18,12 +38,20 @@ export default function CompetitorsTable({ rows, country = 'FR', period = 'last_
           <thead>
             <tr className="text-left text-neutral-400">
               <th className="px-4 py-2 font-normal">Concurrent</th>
-              <th className="px-4 py-2 font-normal">Δ moyen</th>
-              <th className="px-4 py-2 font-normal">Obs.</th>
+              <th className="px-4 py-2 font-normal">
+                <button className="inline-flex items-center gap-1 hover:text-white/90" onClick={() => toggle('avg_diff')}>
+                  Δ moyen {sort?.key==='avg_diff' ? (sort.dir==='desc' ? '▼' : '▲') : ''}
+                </button>
+              </th>
+              <th className="px-4 py-2 font-normal">
+                <button className="inline-flex items-center gap-1 hover:text-white/90" onClick={() => toggle('observations')}>
+                  Obs. {sort?.key==='observations' ? (sort.dir==='desc' ? '▼' : '▲') : ''}
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {(rows || []).slice(0, 10).map((r) => (
+            {data.map((r) => (
               <tr key={r.competitor_id} className="border-t border-white/5">
                 <td className="px-4 py-2 text-white/90">{r.competitor_id}</td>
                 <td className="px-4 py-2 text-white/90">{Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(r.avg_diff || 0)}</td>

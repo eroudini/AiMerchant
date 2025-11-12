@@ -45,6 +45,10 @@ export class CompetitorsDiffQueryDto {
   @IsString()
   @IsOptional()
   country?: string;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
 }
 
 export class MarketHeatmapQueryDto {
@@ -187,4 +191,8 @@ export class ExportCsvQueryDto {
   @IsOptional()
   @Matches(/^\d+$/)
   threshold?: string;
+
+  @IsOptional()
+  @IsString()
+  category?: string;
 }

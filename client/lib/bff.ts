@@ -20,8 +20,8 @@ export async function getOverview(opts: { period: 'last_7d'|'last_30d'|'last_90d
   return doGet<any>(`/bff/kpi/overview?${qs}`, opts.cookie);
 }
 
-export async function getCompetitorsDiff(opts: { period: 'last_7d'|'last_30d'|'last_90d'; country?: string; cookie?: string }): Promise<any[]> {
-  const qs = new URLSearchParams({ period: opts.period, ...(opts.country ? { country: opts.country } : {}) }).toString();
+export async function getCompetitorsDiff(opts: { period: 'last_7d'|'last_30d'|'last_90d'; country?: string; category?: string; cookie?: string }): Promise<any[]> {
+  const qs = new URLSearchParams({ period: opts.period, ...(opts.country ? { country: opts.country } : {}), ...(opts.category ? { category: opts.category } : {}) }).toString();
   return doGet<any[]>(`/bff/competitors/diff?${qs}`, opts.cookie);
 }
 

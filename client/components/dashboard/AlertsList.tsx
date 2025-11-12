@@ -1,3 +1,4 @@
+import Link from 'next/link';
 type Alert = { type: 'price'|'stock'; product_code: string; product_name?: string|null; category?: string|null; delta_pct: number; current: number; previous: number };
 
 function badge(type: 'price'|'stock', delta: number) {
@@ -23,7 +24,11 @@ export default function AlertsList({ rows }: { rows: Alert[] }) {
           return (
             <div key={`${a.type}-${a.product_code}`} className="flex items-center justify-between px-4 py-3">
               <div className="min-w-0">
-                <div className="truncate text-sm text-white/90" title={`${name}`}>{name}</div>
+                <div className="truncate text-sm text-white/90" title={`${name}`}>
+                  <Link href={`/products/${encodeURIComponent(a.product_code)}`} className="hover:underline">
+                    {name}
+                  </Link>
+                </div>
                 <div className="mt-0.5 text-xs text-neutral-400">
                   {`Le ${label} a ${updown} de ${Math.round(Math.abs(a.delta_pct))}%`} {a.category ? `• ${a.category}` : ''}
                 </div>

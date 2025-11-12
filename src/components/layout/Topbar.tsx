@@ -20,6 +20,7 @@ export default function Topbar() {
     }
   };
 
+
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-neutral-900/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/40">
       <div className="container-responsive h-14 flex items-center justify-between text-white">

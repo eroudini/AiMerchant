@@ -4,6 +4,7 @@ import { BarChart3, MessageSquare } from "lucide-react";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
+  { href: "/spyscope", label: "SpyScope", icon: BarChart3 },
   { href: "/app/copilot", label: "AiChat", icon: MessageSquare },
 ];
 

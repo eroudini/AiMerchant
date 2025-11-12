@@ -37,10 +37,10 @@ router.get('/products/:id/timeseries', validateParams(ProductTimeseriesParamsDto
 });
 
 router.get('/competitors/diff', validateQuery(CompetitorsDiffQueryDto), async (req: any, res) => {
-  const { period, country } = req.validated.query as CompetitorsDiffQueryDto;
+  const { period, country, category } = req.validated.query as CompetitorsDiffQueryDto;
   const accountId = getAccountId(req);
   const svc = getService(req.app);
-  const rows = await svc.competitorsDiff(period, country, accountId);
+  const rows = await svc.competitorsDiff(period, country, accountId, category);
   res.json(rows);
 });
 
@@ -142,7 +142,7 @@ router.get('/export/csv', validateQuery(ExportCsvQueryDto), async (req: any, res
 
   if (q.resource === 'competitors_diff') {
     const period = (q.period === 'last_30d' ? 'last_30d' : q.period === 'last_90d' ? 'last_90d' : 'last_7d') as 'last_7d'|'last_30d'|'last_90d';
-    const rows = await svc.competitorsDiff(period, q.country, accountId);
+    const rows = await svc.competitorsDiff(period, q.country, accountId, (q as any).category);
     const header = 'competitor_id,avg_diff,observations';
     const csv = [header].concat(rows.map(r => [r.competitor_id, r.avg_diff, r.observations].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
     return res.send(csv);

@@ -19,7 +19,7 @@ export interface RadarTrendRow { kind: 'category'|'product'; id: string; name?: 
 export interface BffRepo {
   getOverview(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string): Promise<KpiOverview>;
   getProductTimeseries(productCode: string, metrics: string[], from: string, to: string, granularity: 'day'|'hour', order: 'asc'|'desc', limit?: number, accountId?: string, country?: string): Promise<TimeseriesPoint[]>;
-  getCompetitorsDiff(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string): Promise<CompetitorDiff[]>;
+  getCompetitorsDiff(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string, category?: string): Promise<CompetitorDiff[]>;
   getMarketHeatmap(period: 'last_7d', country: string|undefined, accountId: string): Promise<MarketHeatmapRow[]>;
   getAlertsMovements(period: 'last_7d', country: string|undefined, accountId: string, types: ('price'|'stock')[], thresholdPct: number, limit: number): Promise<AlertMovement[]>;
   getPricingBaseline(productCode: string, country: string|undefined, accountId: string): Promise<PricingBaseline|null>;
@@ -83,16 +83,19 @@ export class PgBffRepo implements BffRepo {
     return out;
   }
 
-  async getCompetitorsDiff(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string): Promise<CompetitorDiff[]> {
+  async getCompetitorsDiff(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string, category?: string): Promise<CompetitorDiff[]> {
     const interval = period === 'last_7d' ? '7 days' : period === 'last_30d' ? '30 days' : '90 days';
-    const sql = `SELECT competitor_id, AVG(competitor_price - our_price) AS avg_diff, COUNT(*) AS observations
-                 FROM comp_snapshot
-                 WHERE account_id=$1 ${country? 'AND country=$2':''} AND ts >= now() - interval '${interval}'
-                 GROUP BY competitor_id
-                 ORDER BY ABS(AVG(competitor_price - our_price)) DESC
+    const sql = `SELECT c.competitor_id, AVG(c.competitor_price - c.our_price) AS avg_diff, COUNT(*) AS observations
+                 FROM comp_snapshot c
+                 ${category? 'LEFT JOIN product p ON p.product_code=c.product_code AND p.account_id=c.account_id' : ''}
+                 WHERE c.account_id=$1 ${country? 'AND c.country=$2':''} AND c.ts >= now() - interval '${interval}'
+                 ${category? 'AND COALESCE(p.category,\'Autre\') = $'+(country?3:2): ''}
+                 GROUP BY c.competitor_id
+                 ORDER BY ABS(AVG(c.competitor_price - c.our_price)) DESC
                  LIMIT 50`;
     const params: any[] = [accountId];
     if (country) params.push(country);
+    if (category) params.push(category);
   const { rows } = await this.pool.query(sql, params);
   return (rows as any[]).map((r) => ({ competitor_id: String(r.competitor_id), avg_diff: Number(r.avg_diff||0), observations: Number(r.observations||0) }));
   }

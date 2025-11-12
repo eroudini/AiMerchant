@@ -14,8 +14,8 @@ export class BffService {
     return this.repo.getProductTimeseries(productCode, metrics, from, to, granularity, order, limit, accountId, country);
   }
 
-  async competitorsDiff(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string): Promise<CompetitorDiff[]> {
-    return this.repo.getCompetitorsDiff(period, country, accountId);
+  async competitorsDiff(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string, category?: string): Promise<CompetitorDiff[]> {
+    return this.repo.getCompetitorsDiff(period, country, accountId, category);
   }
 
   async marketHeatmap(period: 'last_7d', country: string|undefined, accountId: string): Promise<MarketHeatmapRow[]> {
