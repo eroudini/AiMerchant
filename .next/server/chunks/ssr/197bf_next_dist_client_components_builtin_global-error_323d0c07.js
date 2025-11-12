@@ -1,3 +1,0 @@
-module.exports=[57043,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(19834);a.n(d("[project]/Desktop/AiMerchant/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},26183,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(19834);a.n(d("[project]/Desktop/AiMerchant/node_modules/next/dist/client/components/builtin/global-error.js"))},7274,a=>{"use strict";a.i(57043);var b=a.i(26183);a.n(b)}];
-
-//# sourceMappingURL=197bf_next_dist_client_components_builtin_global-error_323d0c07.js.map

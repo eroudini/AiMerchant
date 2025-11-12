@@ -1,1 +1,0 @@
-{"version":3,"sources":["turbopack:///[project]/Desktop/AiMerchant/src/app/auth/page.tsx"],"sourcesContent":["export default function AuthPage() {\r\n  return <div>Écrans d'auth mock</div>;\r\n}\r\n"],"names":[],"mappings":"mVAAe,SAAS,IACtB,MAAO,CAAA,EAAA,EAAA,GAAA,EAAC,MAAA,UAAI,sBACd"}
