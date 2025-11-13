@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateQuery, validateParams, validateBody } from '../middleware/validateClass.js';
-import { OverviewQueryDto, ProductTimeseriesParamsDto, ProductTimeseriesQueryDto, CompetitorsDiffQueryDto, MarketHeatmapQueryDto, AlertsMovementsQueryDto, PricingSimulateQueryDto, StockPredictQueryDto, ProductRadarTrendsQueryDto, ExportCsvQueryDto, PricingSuggestQueryDto, PricingApplyBodyDto } from '../bff/dto.js';
+import { OverviewQueryDto, ProductTimeseriesParamsDto, ProductTimeseriesQueryDto, CompetitorsDiffQueryDto, MarketHeatmapQueryDto, AlertsMovementsQueryDto, PricingSimulateQueryDto, StockPredictQueryDto, ProductRadarTrendsQueryDto, ExportCsvQueryDto, PricingSuggestQueryDto, PricingApplyBodyDto, ForecastDemandQueryDto, ForecastImportArtifactsBodyDto, ForecastSurgeQueryDto, OpportunitiesGainersQueryDto, ActionPoBodyDto, ActionPriceBodyDto } from '../bff/dto.js';
 import { getPrisma } from '../db.js';
 import { BffService } from '../bff/service.js';
 import { PgBffRepo } from '../bff/repo.js';
@@ -112,6 +112,67 @@ router.get('/radar/trends', validateQuery(ProductRadarTrendsQueryDto), async (re
   res.json(rows);
 });
 
+router.get('/forecast/demand', validateQuery(ForecastDemandQueryDto), async (req: any, res) => {
+  const { productId, country, channel, horizon } = req.validated.query as any as { productId: string; country?: string; channel?: string; horizon?: string };
+  const svc = getService(req.app);
+  const h = horizon ? Number(horizon) : 30;
+  const data = await svc.forecastDemand(productId, country, channel, h);
+  res.json(data);
+});
+
+router.post('/forecast/import-artifacts', requireRole('admin'), validateBody(ForecastImportArtifactsBodyDto), async (req: any, res) => {
+  const { productId, country, channel, horizon } = req.validated.body as any as { productId: string; country?: string; channel?: string; horizon?: string };
+  const svc = getService(req.app);
+  const h = horizon ? Number(horizon) : undefined;
+  try {
+    const result = await svc.importForecastFromArtifacts(productId, country, channel, h);
+    res.json(result);
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || 'import_failed' });
+  }
+});
+
+router.get('/forecast/surge', validateQuery(ForecastSurgeQueryDto), async (req: any, res) => {
+  const { productId, country, channel, window, top } = req.validated.query as any as { productId?: string; country?: string; channel?: string; window?: string; top?: string };
+  const svc = getService(req.app);
+  const data = await svc.forecastSurge({ productId, country, channel, window: window ? Number(window) : undefined, top: top ? Number(top) : undefined });
+  res.json(data);
+});
+
+router.get('/opportunities/gainers', validateQuery(OpportunitiesGainersQueryDto), async (req: any, res) => {
+  const { period, country, limit, sort } = req.validated.query as OpportunitiesGainersQueryDto;
+  const accountId = getAccountId(req);
+  const svc = getService(req.app);
+  const rows = await svc.opportunitiesGainers(period, country, accountId, limit ? Number(limit) : 50, sort || 'growth');
+  res.json(rows);
+});
+
+// Actions: PO
+router.post('/actions/po', requireRole('admin'), validateBody(ActionPoBodyDto), async (req: any, res) => {
+  const { productId, qty, country, channel, note } = req.validated.body as any as { productId: string; qty: string; country?: string; channel?: string; note?: string };
+  const userId = req.user?.sub || req.user?.id;
+  const svc = getService(req.app);
+  try {
+    const out = await svc.createPoAction({ userId, productId, qty: Number(qty), country, channel, note });
+    res.json({ status: 'draft', id: out.id });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || 'po_action_failed' });
+  }
+});
+
+// Actions: price recommendation (draft)
+router.post('/actions/price', requireRole('admin'), validateBody(ActionPriceBodyDto), async (req: any, res) => {
+  const { productId, new_price, note } = req.validated.body as any as { productId: string; new_price: string; note?: string };
+  const userId = req.user?.sub || req.user?.id;
+  const svc = getService(req.app);
+  try {
+    const out = await svc.createPriceAction({ userId, productId, newPrice: Number(new_price), note });
+    res.json({ status: 'draft', id: out.id });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || 'price_action_failed' });
+  }
+});
+
 router.get('/export/csv', validateQuery(ExportCsvQueryDto), async (req: any, res) => {
   const q = req.validated.query as ExportCsvQueryDto;
   const accountId = getAccountId(req);
@@ -152,6 +213,25 @@ router.get('/export/csv', validateQuery(ExportCsvQueryDto), async (req: any, res
     const rows = await svc.alertsMovements('last_7d', q.country, accountId, (q.types? q.types.split(',') as any : ['price','stock']), q.threshold? Number(q.threshold): 10, q.limit? Number(q.limit): 100);
     const header = 'type,product_code,product_name,category,delta_pct,current,previous';
     const csv = [header].concat(rows.map(r => [r.type, r.product_code, (r.product_name||''), (r.category||''), r.delta_pct, r.current, r.previous].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+    return res.send(csv);
+  }
+
+  if (q.resource === 'forecast_demand') {
+    const horizon = q.horizon ? Number(q.horizon) : 30;
+    const data = await (getService(req.app)).forecastDemand(q.productId || 'csv', q.country, q.channel, horizon);
+    const header = 'date,yhat,p10,p90';
+    const rows = Array.isArray((data as any).series) ? (data as any).series : [];
+    const csv = [header].concat(rows.map((r: any) => [r.date, r.yhat, r.p10, r.p90].map((v: any)=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+    return res.send(csv);
+  }
+
+  if (q.resource === 'forecast_surge') {
+    const windowDays = q.window ? Number(q.window) : 14;
+    const top = q.top ? Number(q.top) : 5;
+    const data = await (getService(req.app)).forecastSurge({ productId: q.productId, country: q.country, channel: q.channel, window: windowDays, top });
+    const header = 'date,yhat,delta_pct';
+    const rows = Array.isArray((data as any).points) ? (data as any).points : [];
+    const csv = [header].concat(rows.map((r: any) => [r.date, r.yhat, r.delta_pct].map((v: any)=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
     return res.send(csv);
   }
 

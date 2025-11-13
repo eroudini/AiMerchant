@@ -1,28 +1,20 @@
 import { cookies } from 'next/headers';
-import { getOverview, getCompetitorsDiff, getMarketHeatmap, getAlertsMovements, getRadarTrends } from '../../../../client/lib/bff';
+import { getOverview, getAlertsMovements, getRadarTrends } from '../../../../client/lib/bff';
 import KpiCards from '../../../../client/components/dashboard/KpiCards';
-import CompetitorsTable from '../../../../client/components/dashboard/CompetitorsTable';
-import MarketHeatmap from '../../../../client/components/dashboard/MarketHeatmap';
 import AlertsList from '../../../../client/components/dashboard/AlertsList';
-import SmartMarginCard from '../../../../client/components/dashboard/SmartMargin';
-import StockPredictorCard from '../../../../client/components/dashboard/StockPredictor';
 import ProductRadar from '../../../../client/components/dashboard/ProductRadar';
 
 export default async function DashboardPage() {
-  const cookieStore = cookies();
-  const all = (cookieStore as any).getAll ? (cookieStore as any).getAll() : [];
+  const cookieStore = await cookies();
+  const all = cookieStore.getAll();
   const cookieHeader = all.map((c: any) => `${c.name}=${c.value}`).join('; ');
   const period = 'last_7d';
   const country = 'FR';
   let overview: any = { gmv: 0, net_margin: 0, units: 0, aov: 0 };
-  let competitors: any[] = [];
-  let heatmap: any[] = [];
   let alerts: any[] = [];
   let radarProduct: any[] = [];
   let radarCategory: any[] = [];
   try { overview = await getOverview({ period, country, cookie: cookieHeader }); } catch {}
-  try { competitors = await getCompetitorsDiff({ period, country, cookie: cookieHeader }); } catch {}
-  try { heatmap = await getMarketHeatmap({ period: 'last_7d', country, cookie: cookieHeader }); } catch {}
   try { alerts = await getAlertsMovements({ period: 'last_7d', country, threshold: 10, limit: 12, cookie: cookieHeader }); } catch {}
   try { radarProduct = await getRadarTrends({ period: 'last_30d', type: 'product', country, limit: 100, cookie: cookieHeader }); } catch {}
   try { radarCategory = await getRadarTrends({ period: 'last_30d', type: 'category', country, limit: 100, cookie: cookieHeader }); } catch {}
@@ -39,11 +31,13 @@ export default async function DashboardPage() {
           <KpiCards data={overview} />
           <div className="grid grid-cols-1 gap-6">
             <AlertsList rows={alerts} />
-            <SmartMarginCard country={country} />
             <ProductRadar rowsProduct={radarProduct} rowsCategory={radarCategory} period="last_30d" />
-            <StockPredictorCard country={country} />
-            <MarketHeatmap rows={heatmap} />
-            <CompetitorsTable rows={competitors} />
+          </div>
+          {/* Contact minimal en pied de page de l'app */}
+          <div className="mt-8 rounded-xl border border-white/10 bg-neutral-900/60 p-4 text-sm text-neutral-300">
+            Besoin d’aide ? Écrivez‑nous à
+            {' '}<a href="mailto:support@aimerchant.io" className="text-amber-300 hover:underline">support@aimerchant.io</a>
+            {' '}ou ouvrez une demande via <a href="/contact" className="text-amber-300 hover:underline">/contact</a>.
           </div>
         </div>
       </div>

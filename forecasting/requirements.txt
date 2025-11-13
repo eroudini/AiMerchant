@@ -1,0 +1,8 @@
+pandas==2.2.3
+numpy==2.1.3
+joblib==1.4.2
+python-dotenv==1.0.1
+pydantic==2.9.2
+tqdm==4.66.5
+holidays==0.56
+pyyaml==6.0.2

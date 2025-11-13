@@ -1,9 +1,14 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Instagram, Linkedin, Youtube, Twitter } from "lucide-react";
 
 const currentYear = new Date().getFullYear();
 
 export function Footer() {
+  const pathname = usePathname();
+  // Ne pas afficher le footer sur le dashboard (expérience app)
+  if (pathname?.startsWith("/dashboard")) return null;
   return (
     <footer
       className="mt-20 bg-gradient-to-b from-neutral-950 via-neutral-900 to-black"

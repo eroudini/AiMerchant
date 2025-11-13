@@ -63,3 +63,21 @@ export async function getRadarTrends(opts: { period: 'last_30d'|'last_90d'; type
   const qs = new URLSearchParams(params).toString();
   return doGet<any[]>(`/bff/radar/trends?${qs}`, opts.cookie);
 }
+
+export async function getForecastDemand(opts: { productId: string; country?: string; channel?: string; horizon?: number; cookie?: string }): Promise<{ series: { date: string; yhat: number; p10: number; p90: number }[]; source: string }>{
+  const params: Record<string,string> = { productId: opts.productId };
+  if (opts.country) params.country = opts.country;
+  if (opts.channel) params.channel = opts.channel;
+  if (typeof opts.horizon === 'number') params.horizon = String(opts.horizon);
+  const qs = new URLSearchParams(params).toString();
+  return doGet(`/bff/forecast/demand?${qs}`, opts.cookie);
+}
+
+export async function getOpportunitiesGainers(opts: { period: 'last_7d'|'last_30d'; country?: string; limit?: number; sort?: 'growth'|'revenue'; cookie?: string }): Promise<any[]> {
+  const params: Record<string,string> = { period: opts.period };
+  if (opts.country) params.country = opts.country;
+  if (typeof opts.limit === 'number') params.limit = String(opts.limit);
+  if (opts.sort) params.sort = opts.sort;
+  const qs = new URLSearchParams(params).toString();
+  return doGet<any[]>(`/bff/opportunities/gainers?${qs}`, opts.cookie);
+}

@@ -15,6 +15,7 @@ export interface AlertMovement { type: 'price'|'stock'; product_code: string; pr
 export interface PricingBaseline { product_code: string; avg_price?: number|null; units_7d: number; revenue_7d: number; product_name?: string|null; category?: string|null }
 export interface StockPredict { product_code: string; stock_current: number|null; avg_daily_sales: number|null; days_to_stockout: number|null; predicted_stockout_date: string|null }
 export interface RadarTrendRow { kind: 'category'|'product'; id: string; name?: string|null; category?: string|null; revenue_cur: number; revenue_prev: number; growth_pct: number; units_cur: number }
+export interface GainerRow { product_code: string; name?: string|null; category?: string|null; revenue_cur_7: number; revenue_prev_7: number; growth_7d: number; revenue_cur_30: number; revenue_prev_30: number; growth_30d: number; units_7d: number }
 
 export interface BffRepo {
   getOverview(period: 'last_7d'|'last_30d'|'last_90d', country: string|undefined, accountId: string): Promise<KpiOverview>;
@@ -26,6 +27,7 @@ export interface BffRepo {
   getStockPredict(productCode: string, country: string|undefined, accountId: string, leadDays: number): Promise<StockPredict>;
   getRadarTrends(period: 'last_30d'|'last_90d', type: 'category'|'product', country: string|undefined, accountId: string, limit: number): Promise<RadarTrendRow[]>;
   getCompetitorPriceAvg(productCode: string, country: string|undefined, accountId: string): Promise<number|null>;
+  getOpportunitiesGainers(period: 'last_7d'|'last_30d', country: string|undefined, accountId: string, limit: number, sort: 'growth'|'revenue'): Promise<GainerRow[]>;
 }
 
 export class PgBffRepo implements BffRepo {
@@ -147,6 +149,38 @@ export class PgBffRepo implements BffRepo {
 
   async getAlertsMovements(_period: 'last_7d', country: string|undefined, accountId: string, types: ('price'|'stock')[] = ['price','stock'], thresholdPct = 10, limit = 20): Promise<AlertMovement[]> {
     const alerts: AlertMovement[] = [];
+
+    // 1) Try reading from materialized view if available (etl_alerts_mkt)
+    try {
+      const params: any[] = [accountId];
+      const where: string[] = ["account_id=$1"]; // $1 = accountId
+      if (country) { params.push(country); where.push(`country=$${params.length}`); }
+      if (Array.isArray(types) && types.length) { params.push(types); where.push(`type = ANY($${params.length})`); }
+      params.push(Math.max(0, Number(thresholdPct || 0))); where.push(`ABS(delta_pct) >= $${params.length}`);
+      const sql = `SELECT type, product_code, product_name, category, delta_pct, current, previous
+                   FROM etl_alerts_mkt
+                   WHERE ${where.join(' AND ')}
+                   ORDER BY ABS(delta_pct) DESC, current DESC
+                   LIMIT ${Math.max(1, Math.min(500, limit))}`;
+      const { rows } = await this.pool.query(sql, params);
+      if ((rows as any[]).length) {
+        const out: AlertMovement[] = (rows as any[]).map((r) => {
+          const t = String(r.type) === 'stock' ? 'stock' as const : 'price' as const;
+          return {
+            type: t,
+            product_code: String(r.product_code),
+            product_name: r.product_name ?? null,
+            category: r.category ?? null,
+            delta_pct: Number(r.delta_pct || 0),
+            current: Number(r.current || 0),
+            previous: Number(r.previous || 0),
+          } satisfies AlertMovement;
+        });
+        return out.slice(0, limit);
+      }
+    } catch {
+      // view not present or query failure -> fallback to on-the-fly computation
+    }
 
     if (types.includes('price')) {
       try {
@@ -347,5 +381,52 @@ export class PgBffRepo implements BffRepo {
       const { rows } = await this.pool.query(sql, params);
       const v = rows[0]?.avg; return v != null ? Number(v) : null;
     } catch { return null; }
+  }
+
+  async getOpportunitiesGainers(period: 'last_7d'|'last_30d', country: string|undefined, accountId: string, limit = 50, sort: 'growth'|'revenue' = 'growth'): Promise<GainerRow[]> {
+    // Aggregate sales over current and previous windows for 7d and 30d, join on product_code
+    const params: any[] = [accountId]; if (country) params.push(country);
+    const where = `s.account_id=$1 ${country? 'AND s.country=$2':''}`;
+    const cur7 = `SELECT product_code, SUM(revenue) AS revenue, SUM(units_sold) AS units FROM sales_ts s WHERE ${where} AND s.ts >= now() - interval '7 days' GROUP BY 1`;
+    const prev7 = `SELECT product_code, SUM(revenue) AS revenue FROM sales_ts s WHERE ${where} AND s.ts >= now() - interval '14 days' AND s.ts < now() - interval '7 days' GROUP BY 1`;
+    const cur30 = `SELECT product_code, SUM(revenue) AS revenue FROM sales_ts s WHERE ${where} AND s.ts >= now() - interval '30 days' GROUP BY 1`;
+    const prev30 = `SELECT product_code, SUM(revenue) AS revenue FROM sales_ts s WHERE ${where} AND s.ts >= now() - interval '60 days' AND s.ts < now() - interval '30 days' GROUP BY 1`;
+    const sql = `
+      WITH c7 AS (${cur7}), p7 AS (${prev7}), c30 AS (${cur30}), p30 AS (${prev30})
+      SELECT COALESCE(p.product_code, c7.product_code, c30.product_code) AS product_code,
+             MAX(pr.name) AS name,
+             MAX(pr.category) AS category,
+             COALESCE(c7.revenue, 0) AS revenue_cur_7,
+             COALESCE(p7.revenue, 0) AS revenue_prev_7,
+             CASE WHEN COALESCE(p7.revenue,0)=0 THEN (CASE WHEN COALESCE(c7.revenue,0)>0 THEN 100 ELSE 0 END)
+                  ELSE (COALESCE(c7.revenue,0) - p7.revenue)/NULLIF(p7.revenue,0) * 100 END AS growth_7d,
+             COALESCE(c30.revenue, 0) AS revenue_cur_30,
+             COALESCE(p30.revenue, 0) AS revenue_prev_30,
+             CASE WHEN COALESCE(p30.revenue,0)=0 THEN (CASE WHEN COALESCE(c30.revenue,0)>0 THEN 100 ELSE 0 END)
+                  ELSE (COALESCE(c30.revenue,0) - p30.revenue)/NULLIF(p30.revenue,0) * 100 END AS growth_30d,
+             COALESCE(c7.units, 0) AS units_7d
+      FROM c7
+      FULL JOIN p7 ON p7.product_code=c7.product_code
+      FULL JOIN c30 ON c30.product_code=COALESCE(c7.product_code, p7.product_code)
+      FULL JOIN p30 ON p30.product_code=COALESCE(c7.product_code, p7.product_code)
+      LEFT JOIN product pr ON pr.account_id=$1 AND pr.product_code=COALESCE(c7.product_code, p7.product_code, c30.product_code)
+    ` + ` ORDER BY ` + (sort==='revenue'
+      ? (period==='last_7d' ? 'COALESCE(c7.revenue,0)' : 'COALESCE(c30.revenue,0)') + ' DESC NULLS LAST'
+      : (period==='last_7d' ? 'ABS(CASE WHEN COALESCE(p7.revenue,0)=0 THEN 0 ELSE (COALESCE(c7.revenue,0) - p7.revenue)/NULLIF(p7.revenue,0) * 100 END)' : 'ABS(CASE WHEN COALESCE(p30.revenue,0)=0 THEN 0 ELSE (COALESCE(c30.revenue,0) - p30.revenue)/NULLIF(p30.revenue,0) * 100 END)') + ' DESC NULLS LAST')
+      + `, COALESCE(c7.revenue,0) DESC NULLS LAST LIMIT ${Math.max(1, Math.min(200, limit))}`;
+
+    const { rows } = await this.pool.query(sql, params);
+    return (rows as any[]).map(r => ({
+      product_code: String(r.product_code),
+      name: r.name ?? null,
+      category: r.category ?? null,
+      revenue_cur_7: Number(r.revenue_cur_7||0),
+      revenue_prev_7: Number(r.revenue_prev_7||0),
+      growth_7d: Number(r.growth_7d||0),
+      revenue_cur_30: Number(r.revenue_cur_30||0),
+      revenue_prev_30: Number(r.revenue_prev_30||0),
+      growth_30d: Number(r.growth_30d||0),
+      units_7d: Number(r.units_7d||0),
+    }));
   }
 }

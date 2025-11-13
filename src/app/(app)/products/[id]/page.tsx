@@ -23,8 +23,8 @@ async function fetchTimeseries(id: string, cookieHeader: string) {
 }
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
-  const cookieStore = cookies();
-  const all = (cookieStore as any).getAll ? (cookieStore as any).getAll() : [];
+  const cookieStore = await cookies();
+  const all = cookieStore.getAll();
   const cookieHeader = all.map((c: any) => `${c.name}=${c.value}`).join('; ');
   const id = decodeURIComponent(params.id);
   const data = await fetchTimeseries(id, cookieHeader);

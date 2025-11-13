@@ -165,8 +165,8 @@ export class ProductRadarTrendsQueryDto {
 }
 
 export class ExportCsvQueryDto {
-  @IsIn(['radar_trends','market_heatmap','competitors_diff','alerts_movements'])
-  resource!: 'radar_trends'|'market_heatmap'|'competitors_diff'|'alerts_movements';
+  @IsIn(['radar_trends','market_heatmap','competitors_diff','alerts_movements','forecast_demand','forecast_surge'])
+  resource!: 'radar_trends'|'market_heatmap'|'competitors_diff'|'alerts_movements'|'forecast_demand'|'forecast_surge';
 
   @IsOptional()
   @IsString()
@@ -195,4 +195,131 @@ export class ExportCsvQueryDto {
   @IsOptional()
   @IsString()
   category?: string;
+
+  // Forecast-specific filters
+  @IsOptional()
+  @IsString()
+  productId?: string;
+
+  @IsOptional()
+  @IsString()
+  channel?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  horizon?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  window?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  top?: string;
+}
+
+export class ForecastDemandQueryDto {
+  @IsString()
+  productId!: string; // product_code or 'csv' for sample
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  channel?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  horizon?: string; // days
+}
+
+export class ForecastImportArtifactsBodyDto {
+  @IsString()
+  productId!: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  channel?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  horizon?: string;
+}
+
+export class ForecastSurgeQueryDto {
+  @IsOptional()
+  @IsString()
+  productId?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  channel?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  window?: string; // nombre de jours à analyser (ex: 14)
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  top?: string; // top N jours par surge
+}
+
+export class OpportunitiesGainersQueryDto {
+  @IsEnum({ last_7d: 'last_7d', last_30d: 'last_30d' })
+  period!: 'last_7d' | 'last_30d';
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @IsOptional()
+  @Matches(/^\d+$/)
+  limit?: string; // max rows
+
+  // sort by: growth (default) or revenue
+  @IsOptional()
+  @IsIn(['growth','revenue'])
+  sort?: 'growth'|'revenue';
+}
+
+export class ActionPoBodyDto {
+  @IsString()
+  productId!: string; // internal Product.id or product_code mapping
+
+  @Matches(/^\d+$/)
+  qty!: string; // integer quantity
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  channel?: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
+}
+
+export class ActionPriceBodyDto {
+  @IsString()
+  productId!: string;
+
+  @Matches(/^\d+(\.\d+)?$/)
+  new_price!: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 }

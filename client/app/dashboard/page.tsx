@@ -1,11 +1,7 @@
 import { cookies } from 'next/headers';
-import { getOverview, getCompetitorsDiff, getMarketHeatmap, getAlertsMovements, getRadarTrends } from '../../lib/bff';
+import { getOverview, getAlertsMovements, getRadarTrends } from '../../lib/bff';
 import KpiCards from '../../components/dashboard/KpiCards';
-import CompetitorsTable from '../../components/dashboard/CompetitorsTable';
-import MarketHeatmap from '../../components/dashboard/MarketHeatmap';
 import AlertsList from '../../components/dashboard/AlertsList';
-import SmartMarginCard from '../../components/dashboard/SmartMargin';
-import StockPredictorCard from '../../components/dashboard/StockPredictor';
 import ProductRadar from '../../components/dashboard/ProductRadar';
 
 export default async function DashboardPage() {
@@ -15,19 +11,11 @@ export default async function DashboardPage() {
   const period = 'last_7d';
   const country = 'FR';
   let overview: any = { gmv: 0, net_margin: 0, units: 0, aov: 0 };
-  let competitors: any[] = [];
-  let heatmap: any[] = [];
   let alerts: any[] = [];
   let radarProduct: any[] = [];
   let radarCategory: any[] = [];
   try {
     overview = await getOverview({ period, country, cookie: cookieHeader });
-  } catch {}
-  try {
-    competitors = await getCompetitorsDiff({ period, country, cookie: cookieHeader });
-  } catch {}
-  try {
-    heatmap = await getMarketHeatmap({ period: 'last_7d', country, cookie: cookieHeader });
   } catch {}
   try {
     alerts = await getAlertsMovements({ period: 'last_7d', country, threshold: 10, limit: 12, cookie: cookieHeader });
@@ -51,11 +39,7 @@ export default async function DashboardPage() {
           <KpiCards data={overview} />
           <div className="grid grid-cols-1 gap-6">
             <AlertsList rows={alerts} />
-            <SmartMarginCard country={country} /> 
             <ProductRadar rowsProduct={radarProduct} rowsCategory={radarCategory} period="last_30d" />
-            <StockPredictorCard country={country} />
-            <MarketHeatmap rows={heatmap} />
-            <CompetitorsTable rows={competitors} />
           </div>
         </div>
       </div>

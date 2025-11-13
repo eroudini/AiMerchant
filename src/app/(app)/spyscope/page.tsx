@@ -6,13 +6,14 @@ import { getCompetitorsDiff, getMarketHeatmap, getAlertsMovements } from '../../
 import FilterBar from '../../../../client/components/spyscope/FilterBar';
 import QuickExports from '../../../../client/components/spyscope/QuickExports';
 
-export default async function SpyScopePage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
-  const cookieStore = cookies();
-  const all = (cookieStore as any).getAll ? (cookieStore as any).getAll() : [];
+export default async function SpyScopePage({ searchParams }: { searchParams?: Promise<Record<string, string | string[]>> }) {
+  const cookieStore = await cookies();
+  const all = cookieStore.getAll();
   const cookieHeader = all.map((c: any) => `${c.name}=${c.value}`).join('; ');
-  const periodParam = typeof searchParams?.period === 'string' ? searchParams!.period : Array.isArray(searchParams?.period) ? searchParams!.period[0] : undefined;
-  const countryParam = typeof searchParams?.country === 'string' ? searchParams!.country : Array.isArray(searchParams?.country) ? searchParams!.country[0] : undefined;
-  const categoryParam = typeof searchParams?.category === 'string' ? searchParams!.category : Array.isArray(searchParams?.category) ? searchParams!.category[0] : undefined;
+  const sp = searchParams ? await searchParams : ({} as Record<string, string | string[]>);
+  const periodParam = typeof sp.period === 'string' ? sp.period : Array.isArray(sp.period) ? sp.period[0] : undefined;
+  const countryParam = typeof sp.country === 'string' ? sp.country : Array.isArray(sp.country) ? sp.country[0] : undefined;
+  const categoryParam = typeof sp.category === 'string' ? sp.category : Array.isArray(sp.category) ? sp.category[0] : undefined;
   const period = (periodParam === 'last_7d' || periodParam === 'last_30d' || periodParam === 'last_90d') ? periodParam : 'last_7d';
   const country = (countryParam && countryParam.length === 2) ? countryParam.toUpperCase() : 'FR';
   const category = (categoryParam && categoryParam.trim().length > 0) ? categoryParam.trim() : undefined;
