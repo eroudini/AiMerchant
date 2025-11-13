@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "etl:daily": "npm --prefix services/etl-svc run etl.run -- daily",
+    "start:bff": "npm --prefix apps/bff run start:dev"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

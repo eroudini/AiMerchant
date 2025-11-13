@@ -8,7 +8,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
-      { useESM: true }
+      { useESM: true, tsconfig: './tsconfig.json' }
     ],
   },
   extensionsToTreatAsEsm: ['.ts'],

@@ -53,3 +53,42 @@ Le middleware protège `/app/*` sur la présence du cookie `accessToken`. Côté
 Backend : Node.js / Express
 
 IA : Intégration OpenAI pour les insights et recommandations
+
+## Nouveaux services (Forecast & ETL)
+
+Ce repo inclut désormais:
+
+- services/etl-svc: Service ETL Node.js (Amazon/Shopify/Trends/Météo) avec pipelines idempotents vers Postgres (tables `sales_daily`, `inventory_daily`, `price_daily`, `google_trends_daily`, `weather_daily`).
+- services/forecast: Microservice Python FastAPI pour la prévision (modèle simple avec saisonnalité hebdo), écrivant dans `forecast_product_daily`.
+- apps/bff: API BFF NestJS (module Forecast) exposant:
+	- GET `/api/forecast/overview?period=last_30d&country=FR`
+	- POST `/api/forecast/recompute` (correspond au FastAPI `/forecast/run`)
+
+### Exécution rapide
+
+ETL (ingestion journalière):
+
+```powershell
+# Variables nécessaires: DATABASE_URL, ACCOUNT_ID, COUNTRY
+$env:DATABASE_URL="postgres://..."; $env:ACCOUNT_ID="acc-1"; $env:COUNTRY="FR"
+npm run etl:daily
+```
+
+Service Forecast (Python):
+
+```powershell
+cd services/forecast
+python -m venv .venv; .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:DATABASE_URL="postgres://..."
+uvicorn app.main:app --reload --port 8000
+```
+
+BFF NestJS:
+
+```powershell
+$env:FORECAST_SERVICE_URL="http://localhost:8000"; $env:ANALYTICS_DATABASE_URL="postgres://..."
+npm run start:bff
+# BFF écoute sur http://localhost:4200 (préfixe /api)
+```
+

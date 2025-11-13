@@ -126,3 +126,21 @@ export async function fetchShopifyReturns(client: ShopifyClient, accountId: stri
   }
   return rows;
 }
+
+export async function fetchShopifyInventoryDaily(_client: ShopifyClient, accountId: string, country: string, forDateISO: string): Promise<Array<{ account_id: string; product_code: string; country?: string; date: string; stock: number }>> {
+  if (process.env.MOCK === '1') {
+    const date = new Date(forDateISO).toISOString().slice(0, 10);
+    return [{ account_id: accountId, product_code: 'SKU1', country, date, stock: 8 }];
+  }
+  // Placeholder: implement InventoryLevels API
+  return [];
+}
+
+export async function fetchShopifyPriceDaily(_client: ShopifyClient, accountId: string, country: string, forDateISO: string): Promise<Array<{ account_id: string; product_code: string; country?: string; date: string; price: number }>> {
+  if (process.env.MOCK === '1') {
+    const date = new Date(forDateISO).toISOString().slice(0, 10);
+    return [{ account_id: accountId, product_code: 'SKU1', country, date, price: 27 }];
+  }
+  // Placeholder: implement PriceList API or derive from orders/variants
+  return [];
+}

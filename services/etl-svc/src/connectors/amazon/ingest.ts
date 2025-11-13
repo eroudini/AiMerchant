@@ -105,3 +105,21 @@ export async function fetchAmazonSalesDaily(client: AmazonClient, accountId: str
     attrs: r.attrs ?? null,
   }));
 }
+
+export async function fetchAmazonInventoryDaily(_client: AmazonClient, accountId: string, country: string, forDateISO: string): Promise<Array<{ account_id: string; product_code: string; country?: string; date: string; stock: number }>> {
+  if (process.env.MOCK === '1') {
+    const date = new Date(forDateISO).toISOString().slice(0, 10);
+    return [{ account_id: accountId, product_code: 'SKU1', country, date, stock: 12 }];
+  }
+  // Placeholder: implement SP-API Inventory
+  return [];
+}
+
+export async function fetchAmazonPriceDaily(_client: AmazonClient, accountId: string, country: string, forDateISO: string): Promise<Array<{ account_id: string; product_code: string; country?: string; date: string; price: number }>> {
+  if (process.env.MOCK === '1') {
+    const date = new Date(forDateISO).toISOString().slice(0, 10);
+    return [{ account_id: accountId, product_code: 'SKU1', country, date, price: 25 }];
+  }
+  // Placeholder: implement SP-API Pricing
+  return [];
+}
