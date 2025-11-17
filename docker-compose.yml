@@ -1,0 +1,72 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:16
+    container_name: aimerchant-db
+    environment:
+      POSTGRES_USER: aimerchant
+      POSTGRES_PASSWORD: aimerchant
+      POSTGRES_DB: aimerchant
+    ports:
+      - "5455:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aimerchant -d aimerchant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  forecast:
+    build:
+      context: ./services/forecast
+      dockerfile: Dockerfile
+    container_name: aimerchant-forecast
+    environment:
+      DATABASE_URL: postgresql://aimerchant:aimerchant@db:5432/aimerchant
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+
+  bff:
+    build:
+      context: ./apps/bff
+      dockerfile: Dockerfile
+    container_name: aimerchant-bff
+    environment:
+      ANALYTICS_DATABASE_URL: postgresql://aimerchant:aimerchant@db:5432/aimerchant
+      FORECAST_SERVICE_URL: http://forecast:8001
+      BFF_PORT: "4200"
+      AUTO_ACTION_ENABLED: "1"
+      AUTO_EXECUTE_ENABLED: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+      forecast:
+        condition: service_started
+    ports:
+      - "4200:4200"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        NEXT_PUBLIC_BFF_URL: http://localhost:4200
+        NEXT_PUBLIC_ACCOUNT_ID: acc-1
+    container_name: aimerchant-web
+    environment:
+      # Also set at runtime in case Next reads them dynamically
+      NEXT_PUBLIC_BFF_URL: http://localhost:4200
+      NEXT_PUBLIC_ACCOUNT_ID: acc-1
+      PORT: "3000"
+    depends_on:
+      bff:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

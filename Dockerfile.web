@@ -1,0 +1,35 @@
+# Dockerfile.web - Next.js client
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Install deps
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy app sources
+COPY . .
+
+# Build-time public envs for Next.js
+ARG NEXT_PUBLIC_BFF_URL
+ARG NEXT_PUBLIC_ACCOUNT_ID
+ENV NEXT_PUBLIC_BFF_URL=${NEXT_PUBLIC_BFF_URL}
+ENV NEXT_PUBLIC_ACCOUNT_ID=${NEXT_PUBLIC_ACCOUNT_ID}
+
+# Build Next.js
+RUN npm run build
+
+# Runtime image
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Copy runtime artifacts
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/next.config.js ./next.config.js
+COPY --from=build /app/public ./public
+
+EXPOSE 3000
+CMD ["npm", "start", "--", "-H", "0.0.0.0", "-p", "3000"]

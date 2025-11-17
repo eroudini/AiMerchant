@@ -1,4 +1,4 @@
-# apps/bff/Dockerfile - builds and runs the server BFF
+# apps/bff/Dockerfile - NestJS BFF
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -7,13 +7,13 @@ RUN npm ci
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY . .
-RUN npm --prefix server ci && npm --prefix server run build
+RUN npm ci && npm run build
 
 FROM node:20-alpine
-WORKDIR /app/server
+WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build /app/server/dist ./dist
-COPY --from=build /app/server/package.json ./package.json
-COPY --from=build /app/server/node_modules ./node_modules
-EXPOSE 4000
-CMD ["node", "dist/index.js"]
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+EXPOSE 4200
+CMD ["node", "dist/main.js"]
