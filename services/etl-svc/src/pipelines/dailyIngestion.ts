@@ -92,7 +92,7 @@ export async function runDailyIngestion(opts: { accountId: string; country: stri
       const end = date;
       const keyword = process.env.TRENDS_KEYWORD || 'brand';
       const trends = await fetchGoogleTrendsDaily(keyword, country, start, end);
-      await upsertGoogleTrendsDaily(trends.map((t) => ({ keyword: t.keyword, country: t.country, date: t.date, score: t.score })));
+      await upsertGoogleTrendsDaily(trends.map((t) => ({ keyword: t.keyword, country: t.country, date: t.date, account_id: accountId, score: t.score })));
     } catch (e) {
       logger.warn({ e }, 'google trends ingestion skipped');
     }

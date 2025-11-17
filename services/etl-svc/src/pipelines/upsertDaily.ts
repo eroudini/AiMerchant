@@ -110,13 +110,13 @@ export async function upsertGoogleTrendsDaily(rows: TrendsDailyRow[]) {
   const values: any[] = [];
   const chunks: string[] = [];
   rows.forEach((r, i) => {
-    const j = i * 4;
-    chunks.push(`($${j + 1},$${j + 2},$${j + 3},$${j + 4})`);
-    values.push(r.keyword, r.country, r.date, r.score);
+    const j = i * 5;
+    chunks.push(`($${j + 1},$${j + 2},$${j + 3},$${j + 4},$${j + 5})`);
+    values.push(r.keyword, r.country, r.date, r.account_id ?? '', r.score);
   });
-  const sql = `INSERT INTO google_trends_daily(keyword, country, date, score)
+  const sql = `INSERT INTO google_trends_daily(keyword, country, date, account_id, score)
                VALUES ${chunks.join(',')}
-               ON CONFLICT (keyword, date, country)
+               ON CONFLICT (keyword, date, country, account_id)
                DO UPDATE SET score = EXCLUDED.score`;
   const res = await query(sql, values);
   return (res as any).rowCount ?? rows.length;
