@@ -41,6 +41,7 @@ services:
       BFF_PORT: "4200"
       AUTO_ACTION_ENABLED: "1"
       AUTO_EXECUTE_ENABLED: "0"
+      JWT_SECRET: devsecret123
     depends_on:
       db:
         condition: service_healthy
@@ -61,6 +62,7 @@ services:
       # Also set at runtime in case Next reads them dynamically
       NEXT_PUBLIC_BFF_URL: http://localhost:4200
       NEXT_PUBLIC_ACCOUNT_ID: acc-1
+      NEXT_PUBLIC_JWT_TOKEN: "REPLACE_WITH_GENERATED_TOKEN"
       PORT: "3000"
     depends_on:
       bff:

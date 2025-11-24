@@ -19,6 +19,7 @@ type Recommendation = {
 
 const BFF = process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:4200";
 const ACCOUNT_ID = process.env.NEXT_PUBLIC_ACCOUNT_ID || "acc-1";
+const AUTH_TOKEN = process.env.NEXT_PUBLIC_JWT_TOKEN; // fourni au build ou via variable runtime
 
 export default function OptimizerPage() {
   const [country, setCountry] = useState("FR");
@@ -34,9 +35,9 @@ export default function OptimizerPage() {
   async function loadRecs() {
     setListLoading(true);
     try {
-      const res = await fetch(`${BFF}/api/actions/recommendations?status=draft&type=po&country=${encodeURIComponent(country)}`, {
-        headers: { "x-account-id": ACCOUNT_ID },
-      });
+      const headers: Record<string,string> = { "x-account-id": ACCOUNT_ID };
+      if (AUTH_TOKEN) headers["Authorization"] = `Bearer ${AUTH_TOKEN}`;
+      const res = await fetch(`${BFF}/api/actions/recommendations?status=draft&type=po&country=${encodeURIComponent(country)}`, { headers });
       const data = await res.json();
       setRecs(Array.isArray(data) ? data : []);
       setSelected({});
@@ -53,9 +54,11 @@ export default function OptimizerPage() {
   async function onGenerate() {
     setLoading(true);
     try {
+      const headers: Record<string,string> = { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID };
+      if (AUTH_TOKEN) headers["Authorization"] = `Bearer ${AUTH_TOKEN}`;
       await fetch(`${BFF}/api/actions/recommendations/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID },
+        headers,
         body: JSON.stringify({ horizon_days: horizonDays, min_days_cover: minCover, country }),
       });
       await loadRecs();
@@ -69,9 +72,11 @@ export default function OptimizerPage() {
     if (!ids.length) return;
     setLoading(true);
     try {
+      const headers: Record<string,string> = { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID };
+      if (AUTH_TOKEN) headers["Authorization"] = `Bearer ${AUTH_TOKEN}`;
       await fetch(`${BFF}/api/actions/execute`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID },
+        headers,
         body: JSON.stringify({ ids, note: "execute-from-ui" }),
       });
       await loadRecs();
@@ -99,16 +104,20 @@ export default function OptimizerPage() {
     if (!recomputeTargetIds.length) return;
     setLoading(true);
     try {
+      const baseHeaders: Record<string,string> = { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID };
+      if (AUTH_TOKEN) baseHeaders["Authorization"] = `Bearer ${AUTH_TOKEN}`;
       await fetch(`${BFF}/api/forecast/recompute`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID },
+        headers: baseHeaders,
         body: JSON.stringify({ product_ids: recomputeTargetIds, horizon_days: horizonDays }),
       });
       // Enchaîne automatiquement avec la génération de recommandations,
       // puis recharge la liste.
+      const genHeaders: Record<string,string> = { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID };
+      if (AUTH_TOKEN) genHeaders["Authorization"] = `Bearer ${AUTH_TOKEN}`;
       await fetch(`${BFF}/api/actions/recommendations/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-account-id": ACCOUNT_ID },
+        headers: genHeaders,
         body: JSON.stringify({ horizon_days: horizonDays, min_days_cover: minCover, country }),
       });
       await loadRecs();

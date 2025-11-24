@@ -8,19 +8,19 @@ export class ActionsController {
 
   @Post('recommendations/generate')
   async generate(@Body() body: GenerateRecommendationsBody, @Req() req: any) {
-    const accountId = (req.headers['x-account-id'] as string) || (req.user?.accountId) || process.env.ACCOUNT_ID;
+    const accountId = (req.user?.accountId) || (req.headers['x-account-id'] as string) || process.env.ACCOUNT_ID;
     return this.svc.generateRecommendations(accountId!, body);
   }
 
   @Get('recommendations')
   async list(@Query() query: ListRecommendationsQuery, @Req() req: any): Promise<RecommendationRow[]> {
-    const accountId = (req.headers['x-account-id'] as string) || (req.user?.accountId) || process.env.ACCOUNT_ID;
+    const accountId = (req.user?.accountId) || (req.headers['x-account-id'] as string) || process.env.ACCOUNT_ID;
     return this.svc.listRecommendations(accountId!, query);
   }
 
   @Post('execute')
   async execute(@Body() body: ExecuteActionsBody, @Req() req: any) {
-    const accountId = (req.headers['x-account-id'] as string) || (req.user?.accountId) || process.env.ACCOUNT_ID;
+    const accountId = (req.user?.accountId) || (req.headers['x-account-id'] as string) || process.env.ACCOUNT_ID;
     return this.svc.execute(accountId!, body);
   }
 }

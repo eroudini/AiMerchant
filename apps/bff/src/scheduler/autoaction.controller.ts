@@ -21,8 +21,9 @@ export class AutoActionController {
 
   @Post('run')
   async run(@Body() body: RunBody = {}, @Req() req: any) {
+    const jwtAccount = req.user?.accountId as string | undefined;
     const headerAccount = (req.headers['x-account-id'] as string) || undefined;
-    const accountId = body.account_id || headerAccount;
+    const accountId = body.account_id || jwtAccount || headerAccount;
     const country = body.country ?? process.env.AUTO_ACTION_COUNTRY;
     const horizon = Number(body.horizon_days ?? process.env.AUTO_ACTION_HORIZON_DAYS ?? 14);
     const minCover = Number(body.min_days_cover ?? process.env.AUTO_ACTION_MIN_DAYS_COVER ?? 7);
